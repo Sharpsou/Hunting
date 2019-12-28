@@ -158,6 +158,6 @@ class Prey(Agent):
         self.detection_range = 50
 
 
-test = Environment(40, 40, 2, 2)
+test = Environment(40, 40, 5, 5)
 
 
