@@ -5,6 +5,7 @@ from random import *
 
 class Environment:
     def __init__(self, height, width, nb_hunter, nb_prey):
+        self.first_loop = True
         self.state = True
         self.height = height
         self.width = width
@@ -26,10 +27,8 @@ class Environment:
         while self.state:
             # check all Agent to know next movements
             for a in range(len(self.agents)):
-                self.agents[a][0].next_movement(self)
-            self.canvas.delete('all')
-            self.map_print()
-            self.units_print()
+                self.agents[a].next_movement(self)
+            self.canvas.delete('agent')
             self.agents_print()
             self.canvas.update()
             self.canvas.after(50)
@@ -40,7 +39,6 @@ class Environment:
             row = []
             for x in range(self.width):
                 row.append(choices([0, 1], weights=[10, 2])[0])
-
             self.map.append(row)
         self.map_print()
 
@@ -63,18 +61,16 @@ class Environment:
         for h in range(self.nb_hunter):
             hunt_x = randint(int((self.width-1)/2), self.width-1)
             hunt_y = randint(int((self.height-1)/2), self.height-1)
-            unit = [Hunter(hunt_x, hunt_y)]
-            self.agents.append(unit)
+            self.agents.append(Hunter(hunt_x, hunt_y))
         for p in range(self.nb_prey):
             prey_x = randint(0, int((self.width - 1) / 2))
             prey_y = randint(0, int((self.height - 1) / 2))
-            unit = [Prey(prey_x, prey_y)]
-            self.agents.append(unit)
+            self.agents.append(Prey(prey_x, prey_y))
         self.agents_print()
 
     def agents_print(self):
         for agent in self.agents:
-            self.agent_print(agent[0])
+            self.agent_print(agent)
 
     def units_print(self):
         for y in range(self.height):
@@ -85,7 +81,10 @@ class Environment:
         vertical_dist = 920 / self.height
         horizontal_dist = 1280 / self.width
         if self.map[y][x] == 1:
-            self.canvas.create_rectangle(x * horizontal_dist, y * vertical_dist, (x + 1) * horizontal_dist, (y + 1) * vertical_dist, fill='black')
+            self.canvas.create_rectangle(x * horizontal_dist,
+                                         y * vertical_dist,
+                                         (x + 1) * horizontal_dist,
+                                         (y + 1) * vertical_dist, fill='black')
             self.canvas.pack()
 
     def agent_print(self, agent):
@@ -96,7 +95,11 @@ class Environment:
             color = "red"
         if type(agent) is Prey:
             color = "blue"
-        self.canvas.create_rectangle(agent.position_x * horizontal_dist, agent.position_y * vertical_dist, (agent.position_x + 1) * horizontal_dist, (agent.position_y + 1) * vertical_dist, fill=color)
+        self.canvas.create_rectangle(agent.position_x * horizontal_dist,
+                                     agent.position_y * vertical_dist,
+                                     (agent.position_x + 1) * horizontal_dist,
+                                     (agent.position_y + 1) * vertical_dist, fill=color, tags='agent')
+
         self.canvas.pack()
 
     def display(self):
@@ -156,6 +159,6 @@ class Prey(Agent):
         self.detection_range = 50
 
 
-test = Environment(20, 20, 2, 2)
+test = Environment(40, 40, 2, 2)
 
 
