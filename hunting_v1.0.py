@@ -129,11 +129,9 @@ class Agent:
         self.direction_y = randint(-1, 1)
 
     def next_movement(self, env):
-        # self.next_direction(env)
         x = self.position_x + self.direction_x
         y = self.position_y + self.direction_y
         if env.possibles_movements(x, y) and not (self.direction_x == 0 and self.direction_y == 0):
-            # env.unit_print(x, y)
             self.position_x = x
             self.position_y = y
         else:
