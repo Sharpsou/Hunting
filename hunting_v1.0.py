@@ -6,7 +6,7 @@ from random import *
 class Environment:
     def __init__(self, height, width, nb_hunter, nb_prey):
         self.first_loop = True
-        self.state = True
+        # self.state = True
         self.height = height
         self.width = width
         self.nb_hunter = nb_hunter
@@ -24,6 +24,7 @@ class Environment:
             return False
 
     def simulation(self, event):
+        self.state = True
         while self.state:
             # check all Agent to know next movements
             for a in range(len(self.agents)):
@@ -114,11 +115,14 @@ class Environment:
     def event(self):
         self.canvas.bind_all('<q>', self.quit)  # quit
         self.canvas.bind_all('<s>', self.simulation)  # simulation
+        self.canvas.bind_all('<p>', self.stop_simulation)  # stop simulation
 
     def quit(self, event):
-        print(event)
         self.state = False  # to stop While in simulation()
         self.window.destroy()
+
+    def stop_simulation(self, event):
+        self.state = False  # to stop While in simulation()
 
 
 class Agent:
@@ -127,6 +131,7 @@ class Agent:
         self.position_y = y
         self.direction_x = randint(-1, 1)
         self.direction_y = randint(-1, 1)
+        self.detection_range = 50
 
     def next_movement(self, env):
         x = self.position_x + self.direction_x
@@ -141,19 +146,27 @@ class Agent:
         self.direction_x = randint(-1, 1)  # random move because no algo implemented
         self.direction_y = randint(-1, 1)
 
+    def radar(self, env):
+        self.test = True
+
+    def get_neighbour(self, env):
+        neighbour = []
+        for y in range(self.detection_range):
+            self.test = True
+
 
 class Hunter(Agent):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.health = 100
-        self.detection_range = 50
+        self.health = 1
+        self.detection_range = 4
 
 
 class Prey(Agent):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.health = 100
-        self.detection_range = 50
+        self.health = 2
+        self.detection_range = 3
 
 
 test = Environment(40, 40, 5, 5)
