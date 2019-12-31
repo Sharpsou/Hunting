@@ -5,8 +5,6 @@ from random import *
 
 class Environment:
     def __init__(self, height, width, nb_hunter, nb_prey):
-        self.first_loop = True
-        # self.state = True
         self.height = height
         self.width = width
         self.nb_hunter = nb_hunter
@@ -151,8 +149,10 @@ class Agent:
 
     def get_neighbour(self, env):
         neighbour = []
-        for y in range(self.detection_range):
-            self.test = True
+        for y in range(-self.detection_range, self.detection_range):
+            for x in range(-self.detection_range, self.detection_range):
+                if env.map[y][x] == 1:
+                    neighbour.append(env.map[y][x])
 
 
 class Hunter(Agent):
