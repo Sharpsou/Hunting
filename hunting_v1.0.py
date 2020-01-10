@@ -152,7 +152,8 @@ class Agent:
 
     def get_radar(self, env):
         neighbour = self.get_neighbour(env)
-        neighbour = neighbour.groupby(['sector']).min()
+        if not neighbour.empty:
+        	neighbour = neighbour.groupby(['sector']).min()
         print(neighbour)
         self.radar = neighbour
         # self.radar = neighbour.merge(radar_init, on='sector', how='right')
