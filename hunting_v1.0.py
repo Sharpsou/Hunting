@@ -1,6 +1,7 @@
 from tkinter import *
-import numpy as np
+from math import *
 from random import *
+import pandas as pd
 
 
 class Environment:
@@ -26,7 +27,9 @@ class Environment:
         while self.state:
             # check all Agent to know next movements
             for a in range(len(self.agents)):
+                # self.agents[a].next_direction(self)
                 self.agents[a].next_movement(self)
+                self.agents[a].log_agent()
             self.canvas.delete('agent')
             self.agents_print()
             self.canvas.update()
@@ -60,11 +63,12 @@ class Environment:
         for h in range(self.nb_hunter):
             hunt_x = randint(int((self.width-1)/2), self.width-1)
             hunt_y = randint(int((self.height-1)/2), self.height-1)
-            self.agents.append(Hunter(hunt_x, hunt_y))
+            self.agents.append(Hunter(hunt_x, hunt_y, self))
+
         for p in range(self.nb_prey):
             prey_x = randint(0, int((self.width - 1) / 2))
             prey_y = randint(0, int((self.height - 1) / 2))
-            self.agents.append(Prey(prey_x, prey_y))
+            self.agents.append(Prey(prey_x, prey_y, self))
         self.agents_print()
 
     def agents_print(self):
@@ -124,12 +128,13 @@ class Environment:
 
 
 class Agent:
-    def __init__(self, x, y):
+    def __init__(self, x, y, env):
         self.position_x = x
         self.position_y = y
         self.direction_x = randint(-1, 1)
         self.direction_y = randint(-1, 1)
-        self.detection_range = 50
+        self.detection_range = 0
+        self.resolution = 0
 
     def next_movement(self, env):
         x = self.position_x + self.direction_x
@@ -139,36 +144,89 @@ class Agent:
             self.position_y = y
         else:
             self.next_direction(env)
+        self.get_radar(env)
 
     def next_direction(self, env):
         self.direction_x = randint(-1, 1)  # random move because no algo implemented
         self.direction_y = randint(-1, 1)
 
-    def radar(self, env):
-        self.test = True
+    def get_radar(self, env):
+        neighbour = self.get_neighbour(env)
+        neighbour = neighbour.groupby(['sector']).min()
+        print(neighbour)
+        self.radar = neighbour
+        # self.radar = neighbour.merge(radar_init, on='sector', how='right')
+        print(self.radar)
 
     def get_neighbour(self, env):
         neighbour = []
-        for y in range(-self.detection_range, self.detection_range):
-            for x in range(-self.detection_range, self.detection_range):
-                if env.map[y][x] == 1:
-                    neighbour.append(env.map[y][x])
+        min_range = -self.detection_range
+        max_range = self.detection_range + 1
+        for y in range(min_range, max_range):
+            for x in range(min_range, max_range):
+                if (y != 0 or x != 0) and not env.possibles_movements(self.position_x + x, self.position_y + y):
+                    neighbour.append(self.get_coord(x, y))
+        neighbour = pd.DataFrame(neighbour)
+        if not neighbour.empty:
+            neighbour.columns = ['layer', 'sector']
+        return neighbour
+
+    def get_coord(self, x, y):
+        layer = max(abs(x), abs(y))
+        distance = sqrt(y * y + x * x)
+        if x != 0:
+            orientation = (x/abs(x))
+        else:
+            orientation = 1
+        angle = (acos(y / distance)*orientation)
+        sector = self.get_sector(angle, orientation)
+        return [layer, sector]
+
+    def get_sector(self, angle, orientation):
+        sector_half_length = pi / (self.resolution * 8)
+        sector_start = [-sector_half_length, sector_half_length]
+        if orientation == 1:
+            sector = 0
+        else:
+            sector = 8 * self.resolution
+        while not sector_start[0] <= angle < sector_start[1]:
+            if orientation == 1:
+                sector_start[0] += 2 * sector_half_length
+                sector_start[1] += 2 * sector_half_length
+                sector += 1
+            else:
+                sector_start[0] -= 2 * sector_half_length
+                sector_start[1] -= 2 * sector_half_length
+                sector -= 1
+
+        return sector
+
+    def log_agent(self):
+        print("type : ", type(self))
+        print("position : ", self.position_x, self.position_y)
+        print("direction : ", self.direction_x, self.direction_y)
+        print("radar :")
+        print(self.radar)
 
 
 class Hunter(Agent):
-    def __init__(self, x, y):
-        super().__init__(x, y)
+    def __init__(self, x, y, env):
+        super().__init__(x, y, env)
         self.health = 1
-        self.detection_range = 4
+        self.detection_range = 1
+        self.resolution = 1
+        self.get_radar(env)
 
 
 class Prey(Agent):
-    def __init__(self, x, y):
-        super().__init__(x, y)
+    def __init__(self, x, y, env):
+        super().__init__(x, y, env)
         self.health = 2
-        self.detection_range = 3
+        self.detection_range = 1
+        self.resolution = 1
+        self.get_radar(env)
 
 
-test = Environment(40, 40, 5, 5)
+test = Environment(9, 12, 1, 1)
 
 
