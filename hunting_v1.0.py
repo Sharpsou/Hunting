@@ -10,12 +10,14 @@ class Environment:
         self.width = width
         self.nb_hunter = nb_hunter
         self.nb_prey = nb_prey
+        self.window_width = 1280/2
+        self.window_height = 920/2
         self.display()  # create window's attribute
         self.event()
         self.map_generator()
         self.agents_generator()
         self.canvas.mainloop()
-
+        
     def possibles_movements(self, x, y):
         if (0 <= x <= self.width-1 and 0 <= y <= self.height-1) and self.map[y][x] != 1:
             return True
@@ -46,15 +48,15 @@ class Environment:
 
     def map_print(self):
         # distance between rows and columns
-        vertical_dist = 920 / self.height
-        horizontal_dist = 1280 / self.width
+        vertical_dist = self.window_height / self.height
+        horizontal_dist = self.window_width / self.width
         # rows
         for y in range(self.height):
-            self.canvas.create_line(0, (y+1)*vertical_dist, 1280, (y+1)*vertical_dist)
+            self.canvas.create_line(0, (y+1)*vertical_dist, self.window_width, (y+1)*vertical_dist)
             self.canvas.pack()
         # columns
         for x in range(self.width):
-            self.canvas.create_line((x+1)*horizontal_dist, 0, (x+1)*horizontal_dist, 920)
+            self.canvas.create_line((x+1)*horizontal_dist, 0, (x+1)*horizontal_dist, self.window_height)
             self.canvas.pack()
         self.units_print()
 
@@ -81,8 +83,8 @@ class Environment:
                 self.unit_print(x, y)
 
     def unit_print(self, x, y):
-        vertical_dist = 920 / self.height
-        horizontal_dist = 1280 / self.width
+        vertical_dist = self.window_height / self.height
+        horizontal_dist = self.window_width / self.width
         if self.map[y][x] == 1:
             self.canvas.create_rectangle(x * horizontal_dist,
                                          y * vertical_dist,
@@ -91,8 +93,8 @@ class Environment:
             self.canvas.pack()
 
     def agent_print(self, agent):
-        vertical_dist = 920 / self.height
-        horizontal_dist = 1280 / self.width
+        vertical_dist = self.window_height / self.height
+        horizontal_dist = self.window_width / self.width
         color = "green"
         if type(agent) is Hunter:
             color = "red"
@@ -108,8 +110,8 @@ class Environment:
     def display(self):
         self.window = Tk()
         self.window.title('Hunt 1.0')
-        self.window.geometry('1700x960')
-        self.canvas = Canvas(self.window, width=1280, height=920, bg='grey')
+        self.window.geometry(str(int(self.window_width)) + 'x' + str(int(self.window_height)))
+        self.canvas = Canvas(self.window, width=self.window_width, height=self.window_height, bg='grey')
         self.canvas.pack()
         self.quitLabel = Label(self.window, text="Press Q to quit")
         self.quitLabel.pack()
@@ -153,11 +155,13 @@ class Agent:
     def get_radar(self, env):
         neighbour = self.get_neighbour(env)
         if not neighbour.empty:
-        	neighbour = neighbour.groupby(['sector']).min()
-        print(neighbour)
-        self.radar = neighbour
+        	apparent_neighbour = neighbour.groupby(['sector']).min()
+        self.radar = apparent_neighbour
         # self.radar = neighbour.merge(radar_init, on='sector', how='right')
-        print(self.radar)
+
+    def manage_close_wall(self, apparent_neighbour):
+    	# work in progress
+    	return True
 
     def get_neighbour(self, env):
         neighbour = []
@@ -214,8 +218,8 @@ class Hunter(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 1
-        self.detection_range = 1
-        self.resolution = 1
+        self.detection_range = 3
+        self.resolution = 3
         self.get_radar(env)
 
 
@@ -223,8 +227,8 @@ class Prey(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 2
-        self.detection_range = 1
-        self.resolution = 1
+        self.detection_range = 3
+        self.resolution = 3
         self.get_radar(env)
 
 
