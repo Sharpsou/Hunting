@@ -10,26 +10,26 @@ class Environment:
         self.width = width
         self.nb_hunter = nb_hunter
         self.nb_prey = nb_prey
-        self.window_width = 1280/2
-        self.window_height = 920/2
+        self.window_width = 1280 / 2
+        self.window_height = 920 / 2
+        self.window_marge = 420 / 2
         self.display()  # create window's attribute
-        self.event()
         self.map_generator()
         self.agents_generator()
         self.canvas.mainloop()
-        
+
     def possibles_movements(self, x, y):
-        if (0 <= x <= self.width-1 and 0 <= y <= self.height-1) and self.map[y][x] != 1:
+        if (0 <= x <= self.width - 1 and 0 <= y <= self.height - 1) and self.map[y][x] != 1:
             return True
         else:
             return False
 
-    def simulation(self, event):
+    def simulation(self):
         self.state = True
         while self.state:
             # check all Agent to know next movements
             for a in range(len(self.agents)):
-                # self.agents[a].next_direction(self)
+                self.agents[a].next_direction(self)
                 self.agents[a].next_movement(self)
                 self.agents[a].log_agent()
             self.canvas.delete('agent')
@@ -52,19 +52,19 @@ class Environment:
         horizontal_dist = self.window_width / self.width
         # rows
         for y in range(self.height):
-            self.canvas.create_line(0, (y+1)*vertical_dist, self.window_width, (y+1)*vertical_dist)
+            self.canvas.create_line(0, (y + 1) * vertical_dist, self.window_width, (y + 1) * vertical_dist)
             self.canvas.pack()
         # columns
         for x in range(self.width):
-            self.canvas.create_line((x+1)*horizontal_dist, 0, (x+1)*horizontal_dist, self.window_height)
+            self.canvas.create_line((x + 1) * horizontal_dist, 0, (x + 1) * horizontal_dist, self.window_height)
             self.canvas.pack()
         self.units_print()
 
     def agents_generator(self):
         self.agents = []
         for h in range(self.nb_hunter):
-            hunt_x = randint(int((self.width-1)/2), self.width-1)
-            hunt_y = randint(int((self.height-1)/2), self.height-1)
+            hunt_x = randint(int((self.width - 1) / 2), self.width - 1)
+            hunt_y = randint(int((self.height - 1) / 2), self.height - 1)
             self.agents.append(Hunter(hunt_x, hunt_y, self))
 
         for p in range(self.nb_prey):
@@ -110,22 +110,24 @@ class Environment:
     def display(self):
         self.window = Tk()
         self.window.title('Hunt 1.0')
-        self.window.geometry(str(int(self.window_width)) + 'x' + str(int(self.window_height)))
+        self.window.geometry(str(int(self.window_width + self.window_marge)) + 'x' + str(int(self.window_height + self.window_marge/2)))
         self.canvas = Canvas(self.window, width=self.window_width, height=self.window_height, bg='grey')
         self.canvas.pack()
-        self.quitLabel = Label(self.window, text="Press Q to quit")
-        self.quitLabel.pack()
+        self.interface()
 
-    def event(self):
-        self.canvas.bind_all('<q>', self.quit)  # quit
-        self.canvas.bind_all('<s>', self.simulation)  # simulation
-        self.canvas.bind_all('<p>', self.stop_simulation)  # stop simulation
+    def interface(self):
+        self.button_simulation = Button(self.window, text="Simulation", command=self.simulation)
+        self.button_stop = Button(self.window, text="Stop", command=self.stop_simulation)
+        self.quit = Button(self.window, text="Quit", command=self.quit)
+        self.button_simulation.pack(side=LEFT, expand=True, fill=BOTH)
+        self.button_stop.pack(side=LEFT, expand=True, fill=BOTH)
+        self.quit.pack(side=LEFT, expand=True, fill=BOTH)
 
-    def quit(self, event):
+    def quit(self):
         self.state = False  # to stop While in simulation()
         self.window.destroy()
 
-    def stop_simulation(self, event):
+    def stop_simulation(self):
         self.state = False  # to stop While in simulation()
 
 
@@ -155,13 +157,13 @@ class Agent:
     def get_radar(self, env):
         neighbour = self.get_neighbour(env)
         if not neighbour.empty:
-        	apparent_neighbour = neighbour.groupby(['sector']).min()
+            apparent_neighbour = neighbour.groupby(['sector']).min()
         self.radar = apparent_neighbour
         # self.radar = neighbour.merge(radar_init, on='sector', how='right')
 
     def manage_close_wall(self, apparent_neighbour):
-    	# work in progress
-    	return True
+        # work in progress
+        return True
 
     def get_neighbour(self, env):
         neighbour = []
@@ -173,19 +175,19 @@ class Agent:
                     neighbour.append(self.get_coord(x, y))
         neighbour = pd.DataFrame(neighbour)
         if not neighbour.empty:
-            neighbour.columns = ['layer', 'sector']
+            neighbour.columns = ['layer', 'sector', 'x', 'y']
         return neighbour
 
     def get_coord(self, x, y):
         layer = max(abs(x), abs(y))
         distance = sqrt(y * y + x * x)
         if x != 0:
-            orientation = (x/abs(x))
+            orientation = (x / abs(x))
         else:
             orientation = 1
-        angle = (acos(y / distance)*orientation)
+        angle = (acos(y / distance) * orientation)
         sector = self.get_sector(angle, orientation)
-        return [layer, sector]
+        return [layer, sector, x, y]
 
     def get_sector(self, angle, orientation):
         sector_half_length = pi / (self.resolution * 8)
@@ -218,8 +220,8 @@ class Hunter(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 1
-        self.detection_range = 3
-        self.resolution = 3
+        self.detection_range = 4
+        self.resolution = 2
         self.get_radar(env)
 
 
@@ -227,11 +229,9 @@ class Prey(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 2
-        self.detection_range = 3
-        self.resolution = 3
+        self.detection_range = 4
+        self.resolution = 2
         self.get_radar(env)
 
 
-test = Environment(9, 12, 1, 1)
-
-
+test = Environment(18, 24, 1, 1)
