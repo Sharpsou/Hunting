@@ -5,14 +5,14 @@ import pandas as pd
 
 
 class Environment:
-    def __init__(self, height, width, nb_hunter, nb_prey):
+    def __init__(self, height, width, ratio,  nb_hunter, nb_prey):
         self.height = height
         self.width = width
         self.nb_hunter = nb_hunter
         self.nb_prey = nb_prey
-        self.window_width = 1280 / 2
-        self.window_height = 920 / 2
-        self.window_marge = 420 / 2
+        self.window_width = 1280 / ratio
+        self.window_height = 920 / ratio
+        self.window_marge = 420 / ratio
         self.display()  # create window's attribute
         self.map_generator()
         self.agents_generator()
@@ -42,7 +42,7 @@ class Environment:
         for y in range(self.height):
             row = []
             for x in range(self.width):
-                row.append(choices([0, 1], weights=[10, 2])[0])
+                row.append(choices([0, 1], weights=[10, 5])[0])
             self.map.append(row)
         self.map_print()
 
@@ -110,7 +110,10 @@ class Environment:
     def display(self):
         self.window = Tk()
         self.window.title('Hunt 1.0')
-        self.window.geometry(str(int(self.window_width + self.window_marge)) + 'x' + str(int(self.window_height + self.window_marge/2)))
+        geometry = str(int(self.window_width + self.window_marge)) + \
+                   'x' + \
+                   str(int(self.window_height + self.window_marge/2))
+        self.window.geometry(geometry)
         self.canvas = Canvas(self.window, width=self.window_width, height=self.window_height, bg='grey')
         self.canvas.pack()
         self.interface()
@@ -158,6 +161,8 @@ class Agent:
         neighbour = self.get_neighbour(env)
         if not neighbour.empty:
             apparent_neighbour = neighbour.groupby(['sector']).min()
+        else:
+            apparent_neighbour = pd.DataFrame([[]])
         self.radar = apparent_neighbour
         # self.radar = neighbour.merge(radar_init, on='sector', how='right')
 
@@ -220,8 +225,8 @@ class Hunter(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 1
-        self.detection_range = 4
-        self.resolution = 2
+        self.detection_range = 2
+        self.resolution = self.detection_range
         self.get_radar(env)
 
 
@@ -229,9 +234,9 @@ class Prey(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 2
-        self.detection_range = 4
-        self.resolution = 2
+        self.detection_range = 2
+        self.resolution = self.detection_range
         self.get_radar(env)
 
 
-test = Environment(18, 24, 1, 1)
+test = Environment(9, 12, 4, 1, 1)
