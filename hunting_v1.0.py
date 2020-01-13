@@ -2,6 +2,10 @@ from tkinter import *
 from math import *
 from random import *
 import pandas as pd
+from collections import deque
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.optimizers import Adam
 
 
 class Environment:
@@ -42,7 +46,7 @@ class Environment:
         for y in range(self.height):
             row = []
             for x in range(self.width):
-                row.append(choices([0, 1], weights=[10, 5])[0])
+                row.append(choices([0, 1], weights=[10, 2])[0])
             self.map.append(row)
         self.map_print()
 
@@ -228,6 +232,7 @@ class Hunter(Agent):
         self.detection_range = 2
         self.resolution = self.detection_range
         self.get_radar(env)
+        self.brain = Brain(self)
 
 
 class Prey(Agent):
@@ -237,6 +242,17 @@ class Prey(Agent):
         self.detection_range = 2
         self.resolution = self.detection_range
         self.get_radar(env)
+        self.brain = Brain(self)
 
 
-test = Environment(9, 12, 4, 1, 1)
+
+class Brain:
+    def __init__(self, agent):
+        self.model = Sequential()
+        self.model.add(Dense(16, input_dim=8*agent.resolution, activation='relu'))
+        self.model.add(Dense(16, activation='relu'))
+        self.model.add(Dense(4, activation='linear'))
+        self.model.compile(loss='mse', optimizer='adam')
+
+
+test = Environment(9, 12, 2, 1, 1)
