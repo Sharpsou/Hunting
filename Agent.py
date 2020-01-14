@@ -98,7 +98,7 @@ class Hunter(Agent):
         self.detection_range = 2
         self.resolution = self.detection_range
         self.get_radar(env)
-        self.brain = Brain(self)
+        self.brain = Brain(agent=self)
 
 
 class Prey(Agent):
@@ -108,4 +108,4 @@ class Prey(Agent):
         self.detection_range = 2
         self.resolution = self.detection_range
         self.get_radar(env)
-        self.brain = Brain(self)
+        self.brain = Brain(agent=self)

@@ -6,6 +6,7 @@ from keras.optimizers import Adam
 from random import *
 import numpy as np
 
+
 class Brain:
     def __init__(self, name=None, learning_rate=0.001, epsilon_decay=0.9999, batch_size=30, memory_size=3000, agent=None):
         self.state_size = 8*agent.resolution
