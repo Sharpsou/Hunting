@@ -4,6 +4,7 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
 
+
 class Brain:
     def __init__(self, agent):
         self.model = Sequential()

@@ -3,6 +3,7 @@ from math import *
 import pandas as pd
 from Brain import *
 
+
 class Agent:
     def __init__(self, x, y, env):
         self.position_x = x

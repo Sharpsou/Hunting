@@ -4,10 +4,6 @@ from random import *
 from math import *
 
 
-
-
-
-
 class Environment:
     def __init__(self, height, width, ratio,  nb_hunter, nb_prey):
         self.height = height
