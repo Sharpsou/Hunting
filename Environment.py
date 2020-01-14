@@ -1,7 +1,6 @@
 from Agent import *
 from tkinter import *
 from random import *
-from math import *
 
 
 class Environment:
