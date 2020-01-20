@@ -16,6 +16,7 @@ class Environment:
         self.map_generator()
         self.agents_generator()
         self.canvas.mainloop()
+        self.t = 0
 
     def possibles_movements(self, x, y):
         if (0 <= x <= self.width - 1 and 0 <= y <= self.height - 1) and self.map[y][x] != 1:
@@ -26,10 +27,12 @@ class Environment:
     def simulation(self):
         self.state = True
         while self.state:
+            self.t += 1
             # check all Agent to know next movements
             for a in range(len(self.agents)):
-                self.agents[a].next_direction(self)
-                self.agents[a].next_movement(self)
+                
+                # self.agents[a].next_direction(self)
+                # self.agents[a].next_movement(self)
                 # self.agents[a].log_agent()
             self.canvas.delete('agent')
             self.agents_print()

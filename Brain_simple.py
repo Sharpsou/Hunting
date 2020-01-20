@@ -13,8 +13,7 @@ import time
 class Brain:
     def __init__(self, name=None, learning_rate=0.001, epsilon_decay=0.9999, batch_size=30, memory_size=3000, agent=None):
         self.state_size = 8*agent.resolution
-        self.action_size = 4
-        self.gamma = 0.9
+        self.action_size = 8
         self.epsilon = 1.0
         self.epsilon_min = 0.01
         self.epsilon_decay = epsilon_decay
@@ -27,29 +26,30 @@ class Brain:
             self.model = load_model("model-" + name)
         else:
             self.model = Sequential()
-            self.model.add(Dense(16, input_dim=8 * agent.resolution, activation='relu'))
+            self.model.add(Dense(16, input_dim=self.state_size, activation='relu'))
             self.model.add(Dense(16, activation='relu'))
-            self.model.add(Dense(4, activation='linear'))
+            self.model.add(Dense(self.action_size, activation='linear'))
             self.model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
 
     def decay_epsilon(self):
         self.epsilon *= self.epsilon_decay
 
-    def get_best_action(self, state, rand=True):
+    def get_action(self, state, rand=True):
         if rand and np.random.rand() <= self.epsilon:
             return random.randrange(self.action_size)
 
-        # Predict the reward value based on the given state
+        # Predict
         act_values = self.model.predict(np.array(state))
-
-        # Pick the action based on the predicted reward
         action = np.argmax(act_values[0])
         return action
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append([state, action, reward, next_state, done])
 
-    def replay(self, batch_size):
+    def learn(self, batch_size):
+        if
+
+
         batch_size = min(batch_size, len(self.memory))
 
         minibatch = random.sample(self.memory, batch_size)
