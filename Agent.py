@@ -12,6 +12,16 @@ class Agent:
         self.direction_y = randint(-1, 1)
         self.detection_range = 0
         self.resolution = 0
+        self.movements = {
+            0: (0, 1),
+            1: (1, 1),
+            2: (1, 0),
+            3: (1, -1),
+            4: (0, -1),
+            5: (-1, -1),
+            6: (-1, 0),
+            7: (-1, 1)
+        }
 
     def next_movement(self, env):
         x = self.position_x + self.direction_x

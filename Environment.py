@@ -25,26 +25,28 @@ class Environment:
             return False
 
     def simulation(self):
-        self.state = True
-        while self.state:
+        self.run = True
+        while self.run:
             self.t += 1
             # check all Agent to know next movements
             for a in range(len(self.agents)):
-                
-                # self.agents[a].next_direction(self)
                 # self.agents[a].next_movement(self)
                 # self.agents[a].log_agent()
             self.canvas.delete('agent')
             self.agents_print()
             self.canvas.update()
+
             self.canvas.after(50)
+
+    def get_state(self):
+        return True
 
     def map_generator(self):
         self.map = []
         for y in range(self.height):
             row = []
             for x in range(self.width):
-                row.append(choices([0, 1], weights=[10, 5])[0])
+                row.append(choices([0, 1], weights=[10, 3])[0])
             self.map.append(row)
         self.map_print()
 
@@ -130,8 +132,8 @@ class Environment:
         self.quit.pack(side=LEFT, expand=True, fill=BOTH)
 
     def quit(self):
-        self.state = False  # to stop While in simulation()
+        self.run = False  # to stop While in simulation()
         self.window.destroy()
 
     def stop_simulation(self):
-        self.state = False  # to stop While in simulation()
+        self.run = False  # to stop While in simulation()
