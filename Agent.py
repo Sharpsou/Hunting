@@ -13,16 +13,16 @@ class Agent:
         self.detection_range = 0
         self.resolution = 0
 
-
     def next_movement(self, env):
-        x = self.position_x + self.direction_x
-        y = self.position_y + self.direction_y
+        self.get_radar(env)
         if env.possibles_movements(x, y) and not (self.direction_x == 0 and self.direction_y == 0):
             self.position_x = x
             self.position_y = y
         else:
             self.next_direction(env)
-        self.get_radar(env)
+        x = self.position_x + self.direction_x
+        y = self.position_y + self.direction_y
+
 
     def direction_to_coord(self, direction):
         if direction == 0:
@@ -43,7 +43,7 @@ class Agent:
             return -1, 1
 
     def next_direction(self, env):
-        self.direction_x = randint(-1, 1)  # random move because no algo implemented
+        self.direction_x = self. # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         self.direction_y = randint(-1, 1)
 
     def get_radar(self, env):
