@@ -8,23 +8,27 @@ class Agent:
     def __init__(self, x, y, env):
         self.position_x = x
         self.position_y = y
+        self.temp_position_x = x
+        self.temp_position_y = y
         self.direction_x = randint(-1, 1)
         self.direction_y = randint(-1, 1)
         self.detection_range = 0
         self.resolution = 0
+        self.brain = Brain(agent=self)
 
     def next_movement(self, env):
         self.get_radar(env)
-        if env.possibles_movements(x, y) and not (self.direction_x == 0 and self.direction_y == 0):
+        self.next_direction()
+        self.temp_position_x = self.position_x + self.direction_x
+        self.temp_position_y = self.position_y + self.direction_y
+        if env.possibles_movements(self.temp_position_x, self.temp_position_y) and not (self.direction_x == 0 and self.direction_y == 0):
             self.position_x = x
             self.position_y = y
         else:
-            self.next_direction(env)
-        x = self.position_x + self.direction_x
-        y = self.position_y + self.direction_y
+            self.next_direction()
 
-
-    def direction_to_coord(self, direction):
+    @staticmethod
+    def direction_to_coord(direction):
         if direction == 0:
             return 0, 1
         if direction == 1:
@@ -42,9 +46,9 @@ class Agent:
         if direction == 7:
             return -1, 1
 
-    def next_direction(self, env):
-        self.direction_x = self. # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        self.direction_y = randint(-1, 1)
+    def next_direction(self):
+        direction = self.brain.get_action(self.radar, rand=True)
+        self.direction_x, self.direction_y = self.direction_to_coord(direction)
 
     def get_radar(self, env):
         neighbour = self.get_neighbour(env)
@@ -117,7 +121,6 @@ class Hunter(Agent):
         self.detection_range = 2
         self.resolution = self.detection_range-1
         self.get_radar(env)
-        self.brain = Brain(agent=self)
 
 
 class Prey(Agent):
@@ -127,4 +130,3 @@ class Prey(Agent):
         self.detection_range = 2
         self.resolution = self.detection_range-1
         self.get_radar(env)
-        self.brain = Brain(agent=self)

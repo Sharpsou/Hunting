@@ -30,7 +30,7 @@ class Environment:
             self.t += 1
             # check all Agent to know next movements
             for a in range(len(self.agents)):
-                # self.agents[a].next_movement(self)
+                self.agents[a].next_movement()
                 # self.agents[a].log_agent()
             self.canvas.delete('agent')
             self.agents_print()
