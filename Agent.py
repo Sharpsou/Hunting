@@ -15,17 +15,25 @@ class Agent:
         self.detection_range = 0
         self.resolution = 0
         self.brain = Brain(agent=self)
+        self.dol = 8
+
+    def init_radar(self):
+        radar_init = []
+        for x in range(8*self.resolution):
+            radar_init.append([x, 0])
+        return pd.DataFrame(radar_init)
 
     def next_movement(self, env):
         self.get_radar(env)
         self.next_direction()
-        self.temp_position_x = self.position_x + self.direction_x
-        self.temp_position_y = self.position_y + self.direction_y
+        x = self.position_x + self.direction_x
+        y = self.position_y + self.direction_y
         if env.possibles_movements(self.temp_position_x, self.temp_position_y) and not (self.direction_x == 0 and self.direction_y == 0):
-            self.position_x = x
-            self.position_y = y
+            self.temp_position_x = x
+            self.temp_position_y = y
+            return None
         else:
-            self.next_direction()
+            return -10
 
     @staticmethod
     def direction_to_coord(direction):
@@ -56,8 +64,7 @@ class Agent:
             apparent_neighbour = neighbour.groupby(['sector']).min()
         else:
             apparent_neighbour = pd.DataFrame([[]])
-        self.radar = apparent_neighbour
-        # self.radar = neighbour.merge(radar_init, on='sector', how='right')
+        self.radar = apparent_neighbour.merge(self.radar, on='sector', how='right')
 
     def manage_close_wall(self, apparent_neighbour):
         # work in progress
@@ -73,7 +80,7 @@ class Agent:
                     neighbour.append(self.get_coord(x, y))
         neighbour = pd.DataFrame(neighbour)
         if not neighbour.empty:
-            neighbour.columns = ['layer', 'sector', 'x', 'y']
+            neighbour.columns = ['layer', 'sector']
         return neighbour
 
     def get_coord(self, x, y):
@@ -85,7 +92,7 @@ class Agent:
             orientation = 1
         angle = (acos(y / distance) * orientation)
         sector = self.get_sector(angle, orientation)
-        return [layer, sector, x, y]
+        return [layer, sector]
 
     def get_sector(self, angle, orientation):
         sector_half_length = pi / (self.resolution * 8)
@@ -120,6 +127,7 @@ class Hunter(Agent):
         self.health = 1
         self.detection_range = 2
         self.resolution = self.detection_range-1
+        self.radar = self.init_radar()
         self.get_radar(env)
 
 
@@ -129,4 +137,5 @@ class Prey(Agent):
         self.health = 2
         self.detection_range = 2
         self.resolution = self.detection_range-1
+        self.radar = self.init_radar()
         self.get_radar(env)

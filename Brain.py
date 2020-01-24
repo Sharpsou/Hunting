@@ -13,7 +13,7 @@ import time
 class Brain:
     def __init__(self, name=None, learning_rate=0.001, epsilon_decay=0.9999, batch_size=30, memory_size=3000, agent=None):
         self.state_size = 8*agent.resolution
-        self.action_size = len(agent.movements)
+        self.action_size = agent.dol
         self.epsilon = 1.0
         self.epsilon_min = 0.01
         self.epsilon_decay = epsilon_decay
