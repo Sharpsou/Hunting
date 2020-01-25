@@ -31,7 +31,7 @@ class Environment:
             # check all Agent to know next movements
             for a in range(len(self.agents)):
                 self.agents[a].next_movement()
-                # self.agents[a].log_agent()
+                self.agents[a].log_agent()
             self.canvas.delete('agent')
             self.agents_print()
             self.canvas.update()
@@ -80,6 +80,22 @@ class Environment:
     def agents_print(self):
         for agent in self.agents:
             self.agent_print(agent)
+
+    def is_agent(self, x, y):
+        for agent in self.agents:
+            if agent.position_x == x and agent.position_y == y:
+                return [True, agent]
+        return [False, None]
+
+    def what_type(self, x, y):
+        if self.is_agent(x, y)[0]:
+            if type(self.is_agent(x, y)[1]) is Prey:
+                return 2
+            if type(self.is_agent(x, y)[1]) is Hunter:
+                return 3
+        else:
+            return 1
+
 
     def units_print(self):
         for y in range(self.height):

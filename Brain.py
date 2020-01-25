@@ -3,6 +3,7 @@ from collections import deque
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
+from keras.layers import Dropout
 from random import *
 import numpy as np
 from keras.models import load_model
@@ -12,7 +13,7 @@ import time
 
 class Brain:
     def __init__(self, name=None, learning_rate=0.001, epsilon_decay=0.9999, batch_size=30, memory_size=3000, agent=None):
-        self.state_size = 8*agent.resolution
+        self.state_size = 8*agent.resolution*2
         self.action_size = agent.dol
         self.epsilon = 1.0
         self.epsilon_min = 0.01
@@ -26,8 +27,10 @@ class Brain:
             self.model = load_model("model-" + name)
         else:
             self.model = Sequential()
-            self.model.add(Dense(16, input_dim=self.state_size, activation='relu'))
-            self.model.add(Dense(16, activation='relu'))
+            self.model.add(Dense(16*agent.resolution, input_dim=self.state_size, activation='relu'))
+            self.model.add(Dropout(rate=0.2))
+            self.model.add(Dense(16*agent.resolution, activation='relu'))
+            self.model.add(Dropout(rate=0.2))
             self.model.add(Dense(self.action_size, activation='linear'))
             self.model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
 
@@ -47,8 +50,6 @@ class Brain:
         self.memory.append([state, action, reward, next_state, done])
 
     def learn(self, batch_size):
-        if
-
 
         batch_size = min(batch_size, len(self.memory))
 

@@ -14,14 +14,15 @@ class Agent:
         self.direction_y = randint(-1, 1)
         self.detection_range = 0
         self.resolution = 0
-        self.brain = Brain(agent=self)
         self.dol = 8
 
     def init_radar(self):
         radar_init = []
         for x in range(8*self.resolution):
-            radar_init.append([x, 0])
-        return pd.DataFrame(radar_init)
+            radar_init.append([x, 0, 0])
+        radar_init = pd.DataFrame(radar_init)
+        radar_init.columns = ['layer', 'sector', 'type']
+        return radar_init
 
     def next_movement(self, env):
         self.get_radar(env)
@@ -31,7 +32,10 @@ class Agent:
         if env.possibles_movements(self.temp_position_x, self.temp_position_y) and not (self.direction_x == 0 and self.direction_y == 0):
             self.temp_position_x = x
             self.temp_position_y = y
-            return None
+            if type(self) is Prey:
+                return 1
+            if type(self) is Hunter:
+                return -1
         else:
             return -10
 
@@ -63,8 +67,9 @@ class Agent:
         if not neighbour.empty:
             apparent_neighbour = neighbour.groupby(['sector']).min()
         else:
-            apparent_neighbour = pd.DataFrame([[]])
+            apparent_neighbour = self.init_radar()
         self.radar = apparent_neighbour.merge(self.radar, on='sector', how='right')
+        print(self.radar)
 
     def manage_close_wall(self, apparent_neighbour):
         # work in progress
@@ -76,11 +81,19 @@ class Agent:
         max_range = self.detection_range + 1
         for y in range(min_range, max_range):
             for x in range(min_range, max_range):
-                if (y != 0 or x != 0) and not env.possibles_movements(self.position_x + x, self.position_y + y):
-                    neighbour.append(self.get_coord(x, y))
+                if (y != 0 or x != 0) and (not env.possibles_movements(self.position_x + x, self.position_y + y)
+                                           or env.is_agent(x, y)[0]):
+                    unit = self.get_coord(x, y)
+                    unit.append(env.what_type(x, y))
+                    neighbour.append(unit)
+                    print(unit)
+                    print(env.what_type(x, y))
+                    print(self.get_coord(x, y))
+        print(neighbour)
         neighbour = pd.DataFrame(neighbour)
         if not neighbour.empty:
-            neighbour.columns = ['layer', 'sector']
+            print(neighbour)
+            neighbour.columns = ['layer', 'sector', 'type']
         return neighbour
 
     def get_coord(self, x, y):
@@ -129,6 +142,7 @@ class Hunter(Agent):
         self.resolution = self.detection_range-1
         self.radar = self.init_radar()
         self.get_radar(env)
+        self.brain = Brain(agent=self)
 
 
 class Prey(Agent):
@@ -139,3 +153,5 @@ class Prey(Agent):
         self.resolution = self.detection_range-1
         self.radar = self.init_radar()
         self.get_radar(env)
+        self.brain = Brain(agent=self)
+
