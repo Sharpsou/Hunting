@@ -47,7 +47,7 @@ class Environment:
         for y in range(self.height):
             row = []
             for x in range(self.width):
-                row.append(choices([0, 1], weights=[10, 3])[0])
+                row.append(choices([0, 1], weights=[10, 1])[0])
             self.map.append(row)
         self.map_print()
 
