@@ -39,7 +39,7 @@ class Brain:
 
     def get_action(self, state, rand=True):
         if rand and np.random.rand() <= self.epsilon:
-            return random.randrange(self.action_size)
+            return randrange(self.action_size)
 
         # Predict
         act_values = self.model.predict(np.array(state))
