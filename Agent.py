@@ -69,15 +69,9 @@ class Agent:
             apparent_neighbour = neighbour.groupby(['sector']).min()
         else:
             apparent_neighbour = self.init_radar()
-        print(type(self))
-        print('apparent neighbour :')
-        print(apparent_neighbour)
-        print('init radar :')
-        print(self.init_radar())
-        self.radar = apparent_neighbour.merge(self.init_radar(), on='sector', how='right')
-        self.radar = self.radar.sort_values('sector').fillna(0)
-        print('radar :')
-        print(self.radar)
+        radar_tmp = apparent_neighbour.merge(self.init_radar(), on='sector', how='right')
+        radar_tmp = radar_tmp.sort_values('sector').fillna(0)
+        self.radar = radar_tmp[['layer_x', 'type_x']]
 
     def manage_close_wall(self, apparent_neighbour):
         # work in progress
@@ -141,9 +135,8 @@ class Hunter(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 1
-        self.detection_range = 1
-        self.resolution = self.detection_range-1 if self.detection_range > 1 else 1
-        self.radar = self.init_radar()
+        self.detection_range = 5
+        self.resolution = self.detection_range # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
         self.brain = Brain(agent=self)
 
@@ -152,9 +145,8 @@ class Prey(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 2
-        self.detection_range = 1
-        self.resolution = self.detection_range-1 if self.detection_range > 1 else 1
-        self.radar = self.init_radar()
+        self.detection_range = 5
+        self.resolution = self.detection_range # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
         self.brain = Brain(agent=self)
 
