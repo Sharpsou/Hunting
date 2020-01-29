@@ -27,9 +27,9 @@ class Brain:
             self.model = load_model("model-" + name)
         else:
             self.model = Sequential()
-            self.model.add(Dense(16*agent.resolution, input_dim=self.state_size, activation='relu'))
+            self.model.add(Dense(16, input_dim=self.state_size, activation='relu'))
             self.model.add(Dropout(rate=0.2))
-            self.model.add(Dense(16*agent.resolution, activation='relu'))
+            self.model.add(Dense(16, activation='relu'))
             self.model.add(Dropout(rate=0.2))
             self.model.add(Dense(self.action_size, activation='linear'))
             self.model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
@@ -38,11 +38,15 @@ class Brain:
         self.epsilon *= self.epsilon_decay
 
     def get_action(self, state, rand=True):
-        if rand and np.random.rand() <= self.epsilon:
-            return randrange(self.action_size)
-
+        # if rand and np.random.rand() <= self.epsilon:
+        #     return randrange(self.action_size)
+        value_in_1 = np.array(state['layer_x'])
+        value_in_2 = np.array(state['type_x'])
+        value_in = np.concatenate((value_in_1,value_in_2),axis=None)
+        print(self.state_size)
+        print(value_in)
         # Predict
-        act_values = self.model.predict(np.array(state))
+        act_values = self.model.predict(value_in)
         action = np.argmax(act_values[0])
         return action
 
