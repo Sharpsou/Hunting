@@ -2,6 +2,7 @@ from random import *
 from math import *
 import pandas as pd
 from Brain import *
+from numpy import arange
 
 
 class Agent:
@@ -85,24 +86,28 @@ class Agent:
             for x in range(min_range, max_range):
                 if (y != 0 or x != 0) and (not env.possibles_movements(self.position_x + x, self.position_y + y)
                                            or env.is_agent(x, y)[0]):
-                    unit = self.get_coord(x, y)
-                    unit.append(env.what_type(x, y))
-                    neighbour.append(unit)
+                    layer = max(abs(x), abs(y))
+                    for range_x in arange(x-0.3, x+0.3, 0.1): # to scan aera of unit
+                        for range_y in arange(y-0.3, y+0.3, 0.1):  # to scan aera of unit
+                            sector = self.get_coord(range_x, range_y)
+                            sector.append(layer)
+                            sector.append(env.what_type(x, y))
+                            neighbour.append(sector)
+                    
         neighbour = pd.DataFrame(neighbour)
         if not neighbour.empty:
-            neighbour.columns = ['layer', 'sector', 'type']
+            neighbour.columns = ['sector', 'layer', 'type']
         return neighbour
 
     def get_coord(self, x, y):
-        layer = max(abs(x), abs(y))
         distance = sqrt(y * y + x * x)
         if x != 0:
             orientation = (x / abs(x))
         else:
             orientation = 1
         angle = (acos(y / distance) * orientation)
-        sector = self.get_sector(angle, orientation)
-        return [layer, sector]
+        sector = [self.get_sector(angle, orientation)]
+        return sector
 
     def get_sector(self, angle, orientation):
         sector_half_length = pi / (self.resolution * 8)
@@ -135,7 +140,7 @@ class Hunter(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 1
-        self.detection_range = 5
+        self.detection_range = 3
         self.resolution = self.detection_range # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
         self.brain = Brain(agent=self)
@@ -145,7 +150,7 @@ class Prey(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 2
-        self.detection_range = 5
+        self.detection_range = 3
         self.resolution = self.detection_range # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
         self.brain = Brain(agent=self)
