@@ -30,8 +30,7 @@ class Agent:
         self.next_direction()
         x = self.position_x + self.direction_x
         y = self.position_y + self.direction_y
-        if env.possibles_movements(self.temp_position_x, self.temp_position_y) and\
-                not (self.direction_x == 0 and self.direction_y == 0):
+        if env.possibles_movements(x, y) and not (self.direction_x == 0 and self.direction_y == 0):
             self.temp_position_x = x
             self.temp_position_y = y
             if type(self) is Prey:
@@ -85,10 +84,10 @@ class Agent:
         for y in range(min_range, max_range):
             for x in range(min_range, max_range):
                 if (y != 0 or x != 0) and (not env.possibles_movements(self.position_x + x, self.position_y + y)
-                                           or env.is_agent(x, y)[0]):
+                                           or env.is_agent(self.position_x + x, self.position_y + y)[0]):
                     layer = max(abs(x), abs(y))
-                    for range_x in arange(x-0.3, x+0.3, 0.1): # to scan aera of unit
-                        for range_y in arange(y-0.3, y+0.3, 0.1):  # to scan aera of unit
+                    for range_x in arange(x-(0.1*self.resolution), x+(0.1*self.resolution), 0.1): # to scan aera of unit
+                        for range_y in arange(y-(0.1*self.resolution), y+(0.1*self.resolution), 0.1):  # to scan aera of unit
                             sector = self.get_coord(range_x, range_y)
                             sector.append(layer)
                             sector.append(env.what_type(x, y))

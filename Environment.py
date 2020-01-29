@@ -18,7 +18,6 @@ class Environment:
         self.t = 0
         self.canvas.mainloop()
 
-
     def possibles_movements(self, x, y):
         if (0 <= x <= self.width - 1 and 0 <= y <= self.height - 1) and self.map[y][x] != 1:
             return True
@@ -30,14 +29,28 @@ class Environment:
         while self.run:
             self.t += 1
             # check all Agent to know next movements
-            for a in range(len(self.agents)):
-                self.agents[a].next_movement(self)
-                self.agents[a].log_agent()
+            for agent in self.agents:
+                agent.next_movement(self)
+                # self.agents[a].log_agent()
             self.canvas.delete('agent')
+            self.sync_agents()
             self.agents_print()
             self.canvas.update()
 
-            self.canvas.after(50)
+            self.canvas.after(1)
+
+    def log_agents(self):
+        for agent in self.agents:
+            agent.log_agent()
+
+    def reinit_agents(self):
+        for agent in self.agents:
+            agent.brain.shuffle_weights()
+
+    def sync_agents(self):
+        for agent in self.agents:
+            agent.position_x = agent.temp_position_x
+            agent.position_y = agent.temp_position_y
 
     def get_state(self):
         return True
@@ -47,7 +60,7 @@ class Environment:
         for y in range(self.height):
             row = []
             for x in range(self.width):
-                row.append(choices([0, 1], weights=[10, 5])[0])
+                row.append(choices([0, 1], weights=[10, 1])[0])
             self.map.append(row)
         self.map_print()
 
@@ -97,7 +110,6 @@ class Environment:
         else:
             return 1
 
-
     def units_print(self):
         for y in range(self.height):
             for x in range(self.width):
@@ -143,10 +155,14 @@ class Environment:
         self.button_simulation = Button(self.window, text="Simulation", command=self.simulation)
         self.button_stop = Button(self.window, text="Stop", command=self.stop_simulation)
         self.quit = Button(self.window, text="Quit", command=self.quit)
+        self.button_reinit_agent = Button(self.window, text="Reinit agent", command=self.reinit_agents)
+        self.button_log_agents = Button(self.window, text="Log agents", command=self.log_agents)
         # pack button
         self.button_simulation.pack(side=LEFT, expand=True, fill=BOTH)
         self.button_stop.pack(side=LEFT, expand=True, fill=BOTH)
         self.quit.pack(side=LEFT, expand=True, fill=BOTH)
+        self.button_reinit_agent.pack(side=LEFT, expand=True, fill=BOTH)
+        self.button_log_agents.pack(side=LEFT, expand=True, fill=BOTH)
 
     def quit(self):
         self.run = False  # to stop While in simulation()

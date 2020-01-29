@@ -27,7 +27,7 @@ class Brain:
             self.model = load_model("model-" + name)
         else:
             self.model = Sequential()
-            self.model.add(Dense(16, input_dim=self.state_size, activation='relu'))
+            self.model.add(Dense(16*agent.resolution, input_dim=self.state_size, activation='relu'))
             self.model.add(Dropout(rate=0.2))
             self.model.add(Dense(16, activation='relu'))
             self.model.add(Dropout(rate=0.2))
@@ -40,11 +40,11 @@ class Brain:
     def get_action(self, state, rand=True):
         # if rand and np.random.rand() <= self.epsilon:
         #     return randrange(self.action_size)
-        value_in_1 = np.array(state['layer_x'])
-        value_in_2 = np.array(state['type_x'])
-        value_in = np.concatenate((value_in_1,value_in_2),axis=None)
-        print(self.state_size)
-        print(value_in)
+        value_layer_in = np.array(state['layer_x'])
+        value_type_in = np.array(state['type_x'])
+        value_in = np.concatenate((value_layer_in, value_type_in), axis=None)
+        value_in = np.asarray([value_in])
+
         # Predict
         act_values = self.model.predict(value_in)
         action = np.argmax(act_values[0])
@@ -83,3 +83,11 @@ class Brain:
         if id:
             name += '-' + id
         self.model.save(name, overwrite=overwrite)
+
+    def shuffle_weights(self, weights=None):
+        if weights is None:
+            weights = self.model.get_weights()
+        weights = [np.random.permutation(w.flat).reshape(w.shape) for w in weights]
+        # Faster, but less random: only permutes along the first dimension
+        # weights = [np.random.permutation(w) for w in weights]
+        self.model.set_weights(weights)
