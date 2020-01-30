@@ -90,7 +90,7 @@ class Agent:
                         for range_y in arange(y-(0.1*self.resolution), y+(0.1*self.resolution), 0.1):  # to scan aera of unit
                             sector = self.get_coord(range_x, range_y)
                             sector.append(layer)
-                            sector.append(env.what_type(x, y))
+                            sector.append(env.what_type(self.position_x + x, self.position_y + y))
                             neighbour.append(sector)
                     
         neighbour = pd.DataFrame(neighbour)
