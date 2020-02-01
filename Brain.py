@@ -31,6 +31,10 @@ class Brain:
             self.model.add(Dropout(rate=0.2))
             self.model.add(Dense(16, activation='relu'))
             self.model.add(Dropout(rate=0.2))
+            self.model.add(Dense(16, activation='relu'))
+            self.model.add(Dropout(rate=0.2))
+            self.model.add(Dense(16, activation='relu'))
+            self.model.add(Dropout(rate=0.2))
             self.model.add(Dense(self.action_size, activation='linear'))
             self.model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
 

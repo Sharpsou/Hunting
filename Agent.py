@@ -67,6 +67,8 @@ class Agent:
         neighbour = self.get_neighbour(env)
         if not neighbour.empty:
             apparent_neighbour = neighbour.groupby(['sector']).min()
+            # print(neighbour)
+            # print(apparent_neighbour)
         else:
             apparent_neighbour = self.init_radar()
         radar_tmp = apparent_neighbour.merge(self.init_radar(), on='sector', how='right')
@@ -86,8 +88,9 @@ class Agent:
                 if (y != 0 or x != 0) and (not env.possibles_movements(self.position_x + x, self.position_y + y)
                                            or env.is_agent(self.position_x + x, self.position_y + y)[0]):
                     layer = max(abs(x), abs(y))
-                    for range_x in arange(x-(0.1*self.resolution), x+(0.1*self.resolution), 0.1): # to scan aera of unit
-                        for range_y in arange(y-(0.1*self.resolution), y+(0.1*self.resolution), 0.1):  # to scan aera of unit
+                    delta_area = 0.3 # 0.1*(3-layer) if layer < 3 else 0.1
+                    for range_x in arange(x-delta_area, x+delta_area, 0.1): # to scan area of unit
+                        for range_y in arange(y-delta_area, y+delta_area, 0.1):  # to scan area of unit
                             sector = self.get_coord(range_x, range_y)
                             sector.append(layer)
                             sector.append(env.what_type(self.position_x + x, self.position_y + y))
@@ -96,6 +99,7 @@ class Agent:
         neighbour = pd.DataFrame(neighbour)
         if not neighbour.empty:
             neighbour.columns = ['sector', 'layer', 'type']
+        #print(neighbour)
         return neighbour
 
     def get_coord(self, x, y):
@@ -139,7 +143,7 @@ class Hunter(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 1
-        self.detection_range = 1
+        self.detection_range = 3
         self.resolution = self.detection_range # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
         self.brain = Brain(agent=self)
@@ -149,7 +153,7 @@ class Prey(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 2
-        self.detection_range = 1
+        self.detection_range = 3
         self.resolution = self.detection_range # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
         self.brain = Brain(agent=self)
