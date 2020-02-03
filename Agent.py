@@ -66,14 +66,16 @@ class Agent:
     def get_radar(self, env):
         neighbour = self.get_neighbour(env)
         if not neighbour.empty:
-            apparent_neighbour = neighbour.groupby(['sector']).min()
-            # print(neighbour)
-            # print(apparent_neighbour)
+            apparent_neighbour = neighbour[['sector', 'layer']]
+            apparent_neighbour_min_layer = apparent_neighbour.groupby(['sector']).min()
+            apparent_neighbour_min_dist = apparent_neighbour_min_layer.merge(neighbour, on='sector', how='inner')
+            apparent_neighbour_min_dist = apparent_neighbour_min_dist[['sector', 'layer_x', 'type']]
         else:
-            apparent_neighbour = self.init_radar()
-        radar_tmp = apparent_neighbour.merge(self.init_radar(), on='sector', how='right')
+            apparent_neighbour_min_dist = self.init_radar()
+        radar_tmp = apparent_neighbour_min_dist.merge(self.init_radar(), on='sector', how='right').drop_duplicates()
         radar_tmp = radar_tmp.sort_values('sector').fillna(0)
         self.radar = radar_tmp[['layer_x', 'type_x']]
+        print(radar_tmp)
 
     def manage_close_wall(self, apparent_neighbour):
         # work in progress
@@ -88,18 +90,23 @@ class Agent:
                 if (y != 0 or x != 0) and (not env.possibles_movements(self.position_x + x, self.position_y + y)
                                            or env.is_agent(self.position_x + x, self.position_y + y)[0]):
                     layer = max(abs(x), abs(y))
-                    delta_area = 0.3 # 0.1*(3-layer) if layer < 3 else 0.1
-                    for range_x in arange(x-delta_area, x+delta_area, 0.1): # to scan area of unit
-                        for range_y in arange(y-delta_area, y+delta_area, 0.1):  # to scan area of unit
-                            sector = self.get_coord(range_x, range_y)
-                            sector.append(layer)
-                            sector.append(env.what_type(self.position_x + x, self.position_y + y))
-                            neighbour.append(sector)
-                    
+                    delta_area = 0.1  # 0.1*(3-layer) if layer < 3 else 0.1
+                    if delta_area != 0:
+                        for range_x in arange(x-delta_area, x+delta_area, 0.1): # to scan area of unit
+                            for range_y in arange(y-delta_area, y+delta_area, 0.1):  # to scan area of unit
+                                sector = self.get_coord(range_x, range_y)
+                                sector.append(layer)
+                                sector.append(env.what_type(self.position_x + x, self.position_y + y))
+                                neighbour.append(sector)
+                    else:
+                        sector = self.get_coord(x, y)
+                        sector.append(layer)
+                        sector.append(env.what_type(self.position_x + x, self.position_y + y))
+                        neighbour.append(sector)
+
         neighbour = pd.DataFrame(neighbour)
         if not neighbour.empty:
             neighbour.columns = ['sector', 'layer', 'type']
-        #print(neighbour)
         return neighbour
 
     def get_coord(self, x, y):
@@ -154,7 +161,7 @@ class Prey(Agent):
         super().__init__(x, y, env)
         self.health = 2
         self.detection_range = 3
-        self.resolution = self.detection_range # self.detection_range-1 if self.detection_range > 1 else 1
+        self.resolution = self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
         self.brain = Brain(agent=self)
 
