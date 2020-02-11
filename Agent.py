@@ -74,12 +74,8 @@ class Agent:
             apparent_neighbour_min_dist = self.init_radar()
         radar_tmp = apparent_neighbour_min_dist.merge(self.init_radar(), on='sector', how='right').drop_duplicates()
         radar_tmp = radar_tmp.sort_values('sector').fillna(0)
-        self.radar = radar_tmp[['layer_x', 'type_x']]
-        print(radar_tmp)
-
-    def manage_close_wall(self, apparent_neighbour):
-        # work in progress
-        return True
+        radar_tmp_final = radar_tmp[['sector', 'type_x']].groupby(['sector']).max().merge(radar_tmp[['sector', 'layer_x']].drop_duplicates(), on='sector', how='inner')
+        self.radar = radar_tmp_final[['layer_x', 'type_x']]
 
     def get_neighbour(self, env):
         neighbour = []
@@ -90,10 +86,10 @@ class Agent:
                 if (y != 0 or x != 0) and (not env.possibles_movements(self.position_x + x, self.position_y + y)
                                            or env.is_agent(self.position_x + x, self.position_y + y)[0]):
                     layer = max(abs(x), abs(y))
-                    delta_area = 0.1  # 0.1*(3-layer) if layer < 3 else 0.1
+                    delta_area = 0.5  # 0.1*layer if layer < 5 else 0.5
                     if delta_area != 0:
-                        for range_x in arange(x-delta_area, x+delta_area, 0.1): # to scan area of unit
-                            for range_y in arange(y-delta_area, y+delta_area, 0.1):  # to scan area of unit
+                        for range_x in arange(x-delta_area, x+delta_area, delta_area): # to scan area of unit
+                            for range_y in arange(y-delta_area, y+delta_area, delta_area):  # to scan area of unit
                                 sector = self.get_coord(range_x, range_y)
                                 sector.append(layer)
                                 sector.append(env.what_type(self.position_x + x, self.position_y + y))
@@ -151,7 +147,7 @@ class Hunter(Agent):
         super().__init__(x, y, env)
         self.health = 1
         self.detection_range = 3
-        self.resolution = self.detection_range # self.detection_range-1 if self.detection_range > 1 else 1
+        self.resolution = self.detection_range  # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
         self.brain = Brain(agent=self)
 
@@ -161,7 +157,7 @@ class Prey(Agent):
         super().__init__(x, y, env)
         self.health = 2
         self.detection_range = 3
-        self.resolution = self.detection_range-1 if self.detection_range > 1 else 1
+        self.resolution = self.detection_range  # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
         self.brain = Brain(agent=self)
 

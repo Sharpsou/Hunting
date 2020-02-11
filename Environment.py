@@ -31,7 +31,6 @@ class Environment:
             # check all Agent to know next movements
             for agent in self.agents:
                 agent.next_movement(self)
-                # self.agents[a].log_agent()
             self.canvas.delete('agent')
             self.sync_agents()
             self.agents_print()
@@ -60,7 +59,7 @@ class Environment:
         for y in range(self.height):
             row = []
             for x in range(self.width):
-                row.append(choices([0, 1], weights=[10, 4])[0])
+                row.append(choices([0, 1], weights=[10, 1])[0])
             self.map.append(row)
         self.map_print()
 
