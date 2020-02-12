@@ -19,7 +19,7 @@ class Brain:
         self.epsilon_min = 0.01
         self.epsilon_decay = epsilon_decay
         self.learning_rate = learning_rate
-        self.memory = deque(maxlen=memory_size)
+        self.memory = []  # deque(maxlen=memory_size)
         self.batch_size = batch_size
 
         self.name = name
@@ -52,12 +52,12 @@ class Brain:
         # Predict
         act_values = self.model.predict(value_in)
         action = np.argmax(act_values[0])
-        return action
+        return action, act_values
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.append([state, action, reward, next_state, done])
 
-    def learn(self, batch_size):
+    def fit(self, batch_size):
 
         batch_size = min(batch_size, len(self.memory))
 

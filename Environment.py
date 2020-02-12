@@ -1,6 +1,7 @@
 from Agent import *
 from tkinter import *
 from random import *
+import pandas as pd
 
 
 class Environment:
@@ -15,6 +16,7 @@ class Environment:
         self.display()  # create window's attribute
         self.map_generator()
         self.agents_generator()
+        self.done = False
         self.t = 0
         self.canvas.mainloop()
 
@@ -30,12 +32,14 @@ class Environment:
             self.t += 1
             # check all Agent to know next movements
             for agent in self.agents:
-                agent.next_movement(self)
+                agent.reward, agent.done = agent.next_movement(self)
+            for agent in self.agents:
+                agent.learn()
+
             self.canvas.delete('agent')
             self.sync_agents()
             self.agents_print()
             self.canvas.update()
-
             self.canvas.after(1)
 
     def log_agents(self):
@@ -79,15 +83,15 @@ class Environment:
 
     def agents_generator(self):
         self.agents = []
-        for h in range(self.nb_hunter):
-            hunt_x = randint(int((self.width - 1) / 2), self.width - 1)
-            hunt_y = randint(int((self.height - 1) / 2), self.height - 1)
-            self.agents.append(Hunter(hunt_x, hunt_y, self))
-
         for p in range(self.nb_prey):
             prey_x = randint(0, int((self.width - 1) / 2))
             prey_y = randint(0, int((self.height - 1) / 2))
             self.agents.append(Prey(prey_x, prey_y, self))
+
+        for h in range(self.nb_hunter):
+            hunt_x = randint(int((self.width - 1) / 2), self.width - 1)
+            hunt_y = randint(int((self.height - 1) / 2), self.height - 1)
+            self.agents.append(Hunter(hunt_x, hunt_y, self))
         self.agents_print()
 
     def agents_print(self):

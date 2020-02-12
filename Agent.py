@@ -16,6 +16,8 @@ class Agent:
         self.detection_range = 0
         self.resolution = 0
         self.dol = 8
+        self.reward = 0
+        self.done = False
 
     def init_radar(self):
         radar_init = []
@@ -25,7 +27,12 @@ class Agent:
         radar_init.columns = ['sector', 'layer', 'type']
         return radar_init
 
+    def learn(self):
+        self.brain.remember(self.radar, self.action, self.reward, self.done)
+
     def next_movement(self, env):
+        done = False
+        done_reward = 0
         self.get_radar(env)
         self.next_direction()
         x = self.position_x + self.direction_x
@@ -33,12 +40,21 @@ class Agent:
         if env.possibles_movements(x, y) and not (self.direction_x == 0 and self.direction_y == 0):
             self.temp_position_x = x
             self.temp_position_y = y
+            for agent in env.agents:
+                if type(agent) != type(self) and self.same_position(agent):
+                    done = True
+                    done_reward = 50
             if type(self) is Prey:
-                return 1
+                return 1, done
             if type(self) is Hunter:
-                return -1
+                return -1+done_reward, done
         else:
-            return -10
+            return -10, done
+
+    def same_position(self, agent):
+        if self.position_x == agent.position_x and self.position_y == agent.position_y:
+            return True
+        return False
 
     @staticmethod
     def direction_to_coord(direction):
@@ -60,7 +76,7 @@ class Agent:
             return -1, 1
 
     def next_direction(self):
-        direction = self.brain.get_action(self.radar, rand=True)
+        direction, self.action = self.brain.get_action(self.radar, rand=True)
         self.direction_x, self.direction_y = self.direction_to_coord(direction)
 
     def get_radar(self, env):
