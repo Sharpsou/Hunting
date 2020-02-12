@@ -29,6 +29,7 @@ class Agent:
 
     def learn(self):
         self.brain.remember(self.radar, self.action, self.reward, self.done)
+        self.brain.fit()
 
     def next_movement(self, env):
         done = False

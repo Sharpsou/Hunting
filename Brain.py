@@ -1,5 +1,4 @@
 from Agent import *
-from collections import deque
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.optimizers import Adam
@@ -9,6 +8,8 @@ import numpy as np
 from keras.models import load_model
 import os
 import time
+import pandas as pd
+
 
 
 class Brain:
@@ -54,27 +55,44 @@ class Brain:
         action = np.argmax(act_values[0])
         return action, act_values
 
-    def remember(self, state, action, reward, next_state, done):
-        self.memory.append([state, action, reward, next_state, done])
+    def remember(self, state, action, reward, done):
+        self.memory.append([state, action, reward, done])
 
-    def fit(self, batch_size):
-
+    def fit(self, batch_size=30):
+        memory = pd.DataFrame(self.memory).sort_values(by=[[2]])
+        print('self.memory')
+        print(self.memory)
+        print('memory')
+        print(memory)
         batch_size = min(batch_size, len(self.memory))
-
-        minibatch = random.sample(self.memory, batch_size)
-
+        # print(batch_size)
+        minibatch = memory.head(batch_size)
+        # print(minibatch)
+        # minibatch = list(minibatch)
+        # print(minibatch)
         inputs = np.zeros((batch_size, self.state_size))
         outputs = np.zeros((batch_size, self.action_size))
+        print('minibatch')
+        print(minibatch)
 
-        for i, (state, action, reward, next_state, done) in enumerate(minibatch):
-            target = self.model.predict(state)[0]
-            if done:
-                target[action] = reward
-            else:
-                target[action] = reward + self.gamma * np.max(self.model.predict(next_state))
+        for i, (state, action, reward, done) in enumerate(minibatch):
+            # target = action  # self.model.predict(state)[0]
+            # if done:
+            #     target[action] = reward
+            # else:
+            #     target[action] = reward + self.gamma * np.max(self.model.predict(next_state))
 
-            inputs[i] = state
-            outputs[i] = target
+            value_layer_in = np.array(state['layer_x'])
+            value_type_in = np.array(state['type_x'])
+            value_in = np.concatenate((value_layer_in, value_type_in), axis=None)
+            value_in = np.asarray([value_in])
+
+            inputs[i] = value_in
+            outputs[i] = action
+            # print('inputs')
+            # print(inputs)
+            # print('outputs')
+            # print(outputs)
 
         return self.model.fit(inputs, outputs, epochs=1, verbose=0, batch_size=batch_size)
 

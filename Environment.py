@@ -1,7 +1,6 @@
 from Agent import *
 from tkinter import *
 from random import *
-import pandas as pd
 
 
 class Environment:
@@ -63,7 +62,7 @@ class Environment:
         for y in range(self.height):
             row = []
             for x in range(self.width):
-                row.append(choices([0, 1], weights=[10, 1])[0])
+                row.append(choices([0, 1], weights=[10, 2])[0])
             self.map.append(row)
         self.map_print()
 
