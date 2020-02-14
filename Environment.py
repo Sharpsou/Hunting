@@ -29,10 +29,10 @@ class Environment:
         self.run = True
         while self.run:
             self.t += 1
-            # check all Agent to know next movements
+
             for agent in self.agents:
-                reward, agent.done = agent.next_movement(self)
-                agent.reward += reward
+                agent.reward, agent.done = agent.next_movement(self)
+            
             for agent in self.agents:
                 if agent.done:
                     self.done = True
@@ -40,8 +40,6 @@ class Environment:
             if not self.done:
                 for agent in self.agents:
                     agent.learn()
-
-
 
             self.canvas.delete('agent')
             self.sync_agents()

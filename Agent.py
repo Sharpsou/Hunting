@@ -46,9 +46,9 @@ class Agent:
                     done = True
                     done_reward = 50
             if type(self) is Prey:
-                return 1+env.t, done
+                return 1, done
             if type(self) is Hunter:
-                return -1+done_reward-env.t, done
+                return -1+done_reward, done
         else:
             return -10, done
 
