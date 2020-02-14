@@ -53,27 +53,36 @@ class Brain:
         # Predict
         act_values = self.model.predict(value_in)
         action = np.argmax(act_values[0])
-        return action, act_values
+        return action, act_values, value_in
 
     def remember(self, state, action, reward, done):
         self.memory.append([state, action, reward, done])
 
+    def takeSecond(self, elem):
+        return elem[2]
+
     def fit(self, batch_size=30):
-        memory = pd.DataFrame(self.memory).sort_values(by=[[2]])
-        print('self.memory')
-        print(self.memory)
-        print('memory')
-        print(memory)
+        # memory = pd.DataFrame(self.memory)
+        # print('memory')
+        # print(self.memory)
         batch_size = min(batch_size, len(self.memory))
         # print(batch_size)
-        minibatch = memory.head(batch_size)
+        # memory = self.memory.sort(key=lambda x: x[2])
+
+        # random list
+
+        # sort list with key
+        self.memory.sort(key=self.takeSecond)
+        # print(self.memory)
+        # memory = sorted(self.memory, key=itemgetter(2))
+        minibatch = self.memory[-batch_size:]
+        # minibatch = memory.head(batch_size)
         # print(minibatch)
         # minibatch = list(minibatch)
         # print(minibatch)
         inputs = np.zeros((batch_size, self.state_size))
         outputs = np.zeros((batch_size, self.action_size))
-        print('minibatch')
-        print(minibatch)
+
 
         for i, (state, action, reward, done) in enumerate(minibatch):
             # target = action  # self.model.predict(state)[0]
@@ -82,18 +91,18 @@ class Brain:
             # else:
             #     target[action] = reward + self.gamma * np.max(self.model.predict(next_state))
 
-            value_layer_in = np.array(state['layer_x'])
-            value_type_in = np.array(state['type_x'])
-            value_in = np.concatenate((value_layer_in, value_type_in), axis=None)
-            value_in = np.asarray([value_in])
+            # value_layer_in = np.array(state['layer_x'])
+            # value_type_in = np.array(state['type_x'])
+            # value_in = np.concatenate((value_layer_in, value_type_in), axis=None)
+            # value_in = np.asarray([value_in])
 
-            inputs[i] = value_in
+            inputs[i] = state
             outputs[i] = action
             # print('inputs')
             # print(inputs)
             # print('outputs')
             # print(outputs)
-
+        # print('fit')
         return self.model.fit(inputs, outputs, epochs=1, verbose=0, batch_size=batch_size)
 
     def save(self, id=None, overwrite=False):

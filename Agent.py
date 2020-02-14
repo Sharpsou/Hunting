@@ -28,7 +28,7 @@ class Agent:
         return radar_init
 
     def learn(self):
-        self.brain.remember(self.radar, self.action, self.reward, self.done)
+        self.brain.remember(self.state, self.action, self.reward, self.done)
         self.brain.fit()
 
     def next_movement(self, env):
@@ -46,9 +46,9 @@ class Agent:
                     done = True
                     done_reward = 50
             if type(self) is Prey:
-                return 1, done
+                return 1+env.t, done
             if type(self) is Hunter:
-                return -1+done_reward, done
+                return -1+done_reward-env.t, done
         else:
             return -10, done
 
@@ -77,7 +77,7 @@ class Agent:
             return -1, 1
 
     def next_direction(self):
-        direction, self.action = self.brain.get_action(self.radar, rand=True)
+        direction, self.action, self.state = self.brain.get_action(self.radar, rand=True)
         self.direction_x, self.direction_y = self.direction_to_coord(direction)
 
     def get_radar(self, env):
@@ -157,6 +157,10 @@ class Agent:
         print("direction : ", self.direction_x, self.direction_y)
         print("radar :")
         print(self.radar)
+        print('done')
+        print(self.done)
+        print('reward')
+        print(self.reward)
 
 
 class Hunter(Agent):

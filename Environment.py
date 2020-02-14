@@ -31,9 +31,17 @@ class Environment:
             self.t += 1
             # check all Agent to know next movements
             for agent in self.agents:
-                agent.reward, agent.done = agent.next_movement(self)
+                reward, agent.done = agent.next_movement(self)
+                agent.reward += reward
             for agent in self.agents:
-                agent.learn()
+                if agent.done:
+                    self.done = True
+
+            if not self.done:
+                for agent in self.agents:
+                    agent.learn()
+
+
 
             self.canvas.delete('agent')
             self.sync_agents()
@@ -44,6 +52,9 @@ class Environment:
     def log_agents(self):
         for agent in self.agents:
             agent.log_agent()
+
+    def reinit_environment(self):
+        return True
 
     def reinit_agents(self):
         for agent in self.agents:
