@@ -62,7 +62,14 @@ class Environment:
                         agent.brain.add_reward(-50)
                     else:
                         agent.brain.add_reward(50)
+                    print('non memory concat')
+                    print(agent.brain.memory)
+                    print('temp memory')
+                    print(agent.brain.temp_memory)
                     agent.brain.memory = np.concatenate((agent.brain.memory, agent.brain.temp_memory), axis=0)
+                    print('memory concat')
+                    print(agent.brain.memory)
+                    agent.brain.temp_memory = []
             else:
                 self.score[1] += 1
                 self.result.append([0,1,self.t])
@@ -71,7 +78,14 @@ class Environment:
                         agent.brain.add_reward(50)
                     else:
                         agent.brain.add_reward(-50)
+                    print('non memory concat')
+                    print(agent.brain.memory)
+                    print('temp memory')
+                    print(agent.brain.temp_memory)
                     agent.brain.memory = np.concatenate((agent.brain.memory, agent.brain.temp_memory), axis=0)
+                    print('memory concat')
+                    print(agent.brain.memory)
+                    agent.brain.temp_memory = []
 
             self.reinit_agents()
             self.canvas.delete('agent')

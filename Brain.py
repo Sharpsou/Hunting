@@ -67,22 +67,22 @@ class Brain:
             act_values[action] = 1
             return action, act_values, value_in
 
-    def remember(self, state, action, reward, done):
+    # def remember(self, state, action, reward, done):
 
-        self.memory.append([state, action, reward, done])
+    #     self.memory.append([state, action, reward, done])
 
     def temp_remember(self, state, action, reward, done):
         if len(self.memory) == 0:
             self.memory.append([state, action, reward, done])
         self.temp_memory.append([state, action, reward, done])
 
-    def takeSecond(self, elem):
-        return elem[2]
+    # def takeSecond(self, elem):
+    #     return elem[2]
 
     def fit(self, batch_size=30):
         batch_size = min(batch_size, len(self.memory))
-        print(self.memory)
-        self.memory.sort(key=self.takeSecond)
+        # print(self.memory)
+        # self.memory.sorted(key=itemgetter(2))
 
         minibatch = self.memory[-batch_size:]
 
