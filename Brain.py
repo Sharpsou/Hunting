@@ -12,16 +12,19 @@ import pandas as pd
 
 
 
+
 class Brain:
-    def __init__(self, name=None, learning_rate=0.001, epsilon_decay=0.9999, batch_size=30, memory_size=3000, agent=None):
+    def __init__(self, name=None, learning_rate=0.1, epsilon_decay=0.99, batch_size=30, memory_size=3000, agent=None):
         self.state_size = 8*agent.resolution*2
         self.action_size = agent.dol
-        self.epsilon = 1.0
+        self.epsilon = 1
         self.epsilon_min = 0.01
         self.epsilon_decay = epsilon_decay
         self.learning_rate = learning_rate
         self.memory = []  # deque(maxlen=memory_size)
+        self.temp_memory = []
         self.batch_size = batch_size
+        self.count = []
 
         self.name = name
         if name is not None and os.path.isfile("model-" + name):
@@ -30,40 +33,55 @@ class Brain:
             self.model = Sequential()
             self.model.add(Dense(16*agent.resolution, input_dim=self.state_size, activation='relu'))
             self.model.add(Dropout(rate=0.2))
-            self.model.add(Dense(16, activation='relu'))
+            self.model.add(Dense(32*agent.resolution, activation='relu'))
             self.model.add(Dropout(rate=0.2))
-            self.model.add(Dense(16, activation='relu'))
-            self.model.add(Dropout(rate=0.2))
-            self.model.add(Dense(16, activation='relu'))
+            self.model.add(Dense(8*agent.resolution, activation='relu'))
             self.model.add(Dropout(rate=0.2))
             self.model.add(Dense(self.action_size, activation='linear'))
-            self.model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
+            self.model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate), metrics=['accuracy'])
 
     def decay_epsilon(self):
         self.epsilon *= self.epsilon_decay
 
+    def add_reward(self, reward):
+        for i in range(len(self.temp_memory)):
+            self.temp_memory[i][2] += reward
+
     def get_action(self, state, rand=True):
-        # if rand and np.random.rand() <= self.epsilon:
-        #     return randrange(self.action_size)
+        self.decay_epsilon()
         value_layer_in = np.array(state['layer_x'])
         value_type_in = np.array(state['type_x'])
         value_in = np.concatenate((value_layer_in, value_type_in), axis=None)
         value_in = np.asarray([value_in])
 
-        # Predict
-        act_values = self.model.predict(value_in)
-        action = np.argmax(act_values[0])
-        return action, act_values, value_in
+        if rand and np.random.rand() <= self.epsilon:
+            action = randrange(self.action_size)
+            act_values = np.zeros(self.action_size)
+            act_values[action] = 1
+            return action, act_values, value_in
+        else:
+            # Predict
+            act_values = self.model.predict(value_in)
+            action = np.argmax(act_values[0])
+            act_values = np.zeros(self.action_size)
+            act_values[action] = 1
+            return action, act_values, value_in
 
     def remember(self, state, action, reward, done):
+
         self.memory.append([state, action, reward, done])
+
+    def temp_remember(self, state, action, reward, done):
+        if len(self.memory) == 0:
+            self.memory.append([state, action, reward, done])
+        self.temp_memory.append([state, action, reward, done])
 
     def takeSecond(self, elem):
         return elem[2]
 
     def fit(self, batch_size=30):
         batch_size = min(batch_size, len(self.memory))
-
+        print(self.memory)
         self.memory.sort(key=self.takeSecond)
 
         minibatch = self.memory[-batch_size:]
@@ -75,7 +93,7 @@ class Brain:
             inputs[i] = state
             outputs[i] = action
 
-        return self.model.fit(inputs, outputs, epochs=1, verbose=0, batch_size=batch_size)
+        return self.model.fit(inputs, outputs, epochs=0, verbose=1)
 
     def save(self, id=None, overwrite=False):
         name = 'model'

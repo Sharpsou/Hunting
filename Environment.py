@@ -1,6 +1,7 @@
 from Agent import *
 from tkinter import *
 from random import *
+import numpy as np
 
 
 class Environment:
@@ -17,6 +18,8 @@ class Environment:
         self.agents_generator()
         self.done = False
         self.t = 0
+        self.result = []
+        self.score = [0, 0]
         self.canvas.mainloop()
 
     def possibles_movements(self, x, y):
@@ -29,34 +32,84 @@ class Environment:
         self.run = True
         while self.run:
             self.t += 1
-
             for agent in self.agents:
-                agent.reward, agent.done = agent.next_movement(self)
-            
-            for agent in self.agents:
-                if agent.done:
-                    self.done = True
-
-            if not self.done:
-                for agent in self.agents:
-                    agent.learn()
+                reward, agent.done = agent.next_movement(self)
+                agent.reward += reward
 
             self.canvas.delete('agent')
             self.sync_agents()
             self.agents_print()
             self.canvas.update()
+
+            for agent in self.agents:
+                if agent.done:
+                    self.done = True
+
+            for agent in self.agents:
+                agent.learn()
+
             self.canvas.after(1)
+            self.is_done()
+
+    def is_done(self):
+        if self.done or self.t >= 50:
+            # self.log_agents()
+            if self.done and self.t < 50:
+                self.score[0] += 1
+                self.result.append([1,0,self.t])
+                for agent in self.agents:
+                    if type(agent) is Prey:
+                        agent.brain.add_reward(-50)
+                    else:
+                        agent.brain.add_reward(50)
+                    agent.brain.memory = np.concatenate((agent.brain.memory, agent.brain.temp_memory), axis=0)
+            else:
+                self.score[1] += 1
+                self.result.append([0,1,self.t])
+                for agent in self.agents:
+                    if type(agent) is Prey:
+                        agent.brain.add_reward(50)
+                    else:
+                        agent.brain.add_reward(-50)
+                    agent.brain.memory = np.concatenate((agent.brain.memory, agent.brain.temp_memory), axis=0)
+
+            self.reinit_agents()
+            self.canvas.delete('agent')
+            self.sync_agents()
+            self.agents_print()
+            self.canvas.update()
+            self.t = 0
+            self.done = False
+            # self.run = False
 
     def log_agents(self):
         for agent in self.agents:
             agent.log_agent()
+        print('result')
+        print(self.result)
+        print('score')
+        print(self.score)
 
     def reinit_environment(self):
         return True
 
-    def reinit_agents(self):
+    def reinit_brain_agents(self):
         for agent in self.agents:
             agent.brain.shuffle_weights()
+            agent.reward = 0
+
+    def reinit_agents(self):
+        for agent in self.agents:
+            if type(agent) is Prey:
+                print('prey reinit')
+                agent.temp_position_x = randint(0, int((self.width - 1) / 2))
+                agent.temp_position_y = randint(0, int((self.height - 1) / 2))
+            if type(agent) is Hunter:
+                print('hunter reinit')
+                agent.temp_position_x = randint(int((self.width - 1) / 2), self.width - 1)
+                agent.temp_position_y = randint(int((self.height - 1) / 2), self.height - 1)
+            agent.reward = 0
+        print(self.t)
 
     def sync_agents(self):
         for agent in self.agents:
@@ -71,7 +124,7 @@ class Environment:
         for y in range(self.height):
             row = []
             for x in range(self.width):
-                row.append(choices([0, 1], weights=[10, 2])[0])
+                row.append(choices([0, 1], weights=[10, 0])[0])
             self.map.append(row)
         self.map_print()
 
@@ -165,13 +218,13 @@ class Environment:
     def interface(self):
         self.button_simulation = Button(self.window, text="Simulation", command=self.simulation)
         self.button_stop = Button(self.window, text="Stop", command=self.stop_simulation)
-        self.quit = Button(self.window, text="Quit", command=self.quit)
-        self.button_reinit_agent = Button(self.window, text="Reinit agent", command=self.reinit_agents)
+        self.button_quit = Button(self.window, text="Quit", command=self.quit)
+        self.button_reinit_agent = Button(self.window, text="Reinit agent", command=self.reinit_brain_agents)
         self.button_log_agents = Button(self.window, text="Log agents", command=self.log_agents)
         # pack button
         self.button_simulation.pack(side=LEFT, expand=True, fill=BOTH)
         self.button_stop.pack(side=LEFT, expand=True, fill=BOTH)
-        self.quit.pack(side=LEFT, expand=True, fill=BOTH)
+        self.button_quit.pack(side=LEFT, expand=True, fill=BOTH)
         self.button_reinit_agent.pack(side=LEFT, expand=True, fill=BOTH)
         self.button_log_agents.pack(side=LEFT, expand=True, fill=BOTH)
 

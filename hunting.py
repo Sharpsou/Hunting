@@ -1,4 +1,4 @@
 from Environment import *
 
 
-test = Environment(5, 6, 2, 1, 1)
+test = Environment(2, 2, 2, 1, 1)

@@ -28,7 +28,7 @@ class Agent:
         return radar_init
 
     def learn(self):
-        self.brain.remember(self.state, self.action, self.reward, self.done)
+        self.brain.temp_remember(self.state, self.action, self.reward, self.done)
         self.brain.fit()
 
     def next_movement(self, env):
@@ -46,9 +46,9 @@ class Agent:
                     done = True
                     done_reward = 50
             if type(self) is Prey:
-                return 1, done
+                return 1-done_reward+env.t, done
             if type(self) is Hunter:
-                return -1+done_reward, done
+                return -1+done_reward-env.t, done
         else:
             return -10, done
 
@@ -155,19 +155,25 @@ class Agent:
         print("type : ", type(self))
         print("position : ", self.position_x, self.position_y)
         print("direction : ", self.direction_x, self.direction_y)
-        print("radar :")
-        print(self.radar)
+        # print("radar :")
+        # print(self.radar)
         print('done')
         print(self.done)
         print('reward')
         print(self.reward)
+        print('action')
+        print(self.action)
+        print('state')
+        print(self.state)
+        print('epsilon')
+        print(self.brain.epsilon)
 
 
 class Hunter(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 1
-        self.detection_range = 3
+        self.detection_range = 4
         self.resolution = self.detection_range  # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
         self.brain = Brain(agent=self)
@@ -177,7 +183,7 @@ class Prey(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 2
-        self.detection_range = 3
+        self.detection_range = 4
         self.resolution = self.detection_range  # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
         self.brain = Brain(agent=self)
