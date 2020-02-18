@@ -5,7 +5,7 @@ import numpy as np
 
 
 class Environment:
-    def __init__(self, height, width, ratio,  nb_hunter, nb_prey):
+    def __init__(self, height, width, ratio,  nb_hunter, nb_prey, time_limit=50):
         self.height = height
         self.width = width
         self.nb_hunter = nb_hunter
@@ -20,6 +20,7 @@ class Environment:
         self.t = 0
         self.result = []
         self.score = [0, 0]
+        self.time_limit = time_limit
         self.canvas.mainloop()
 
     def possibles_movements(self, x, y):
@@ -52,9 +53,9 @@ class Environment:
             self.is_done()
 
     def is_done(self):
-        if self.done or self.t >= 50:
+        if self.done or self.t >= self.time_limit:
             # self.log_agents()
-            if self.done and self.t < 50:
+            if self.done and self.t < self.time_limit:
                 self.score[0] += 1
                 self.result.append([1,0,self.t])
                 for agent in self.agents:
@@ -62,13 +63,13 @@ class Environment:
                         agent.brain.add_reward(-50)
                     else:
                         agent.brain.add_reward(50)
-                    print('non memory concat')
-                    print(agent.brain.memory)
-                    print('temp memory')
-                    print(agent.brain.temp_memory)
+                    # print('non memory concat')
+                    # print(agent.brain.memory)
+                    # print('temp memory')
+                    # print(agent.brain.temp_memory)
                     agent.brain.memory = np.concatenate((agent.brain.memory, agent.brain.temp_memory), axis=0)
-                    print('memory concat')
-                    print(agent.brain.memory)
+                    # print('memory concat')
+                    # print(agent.brain.memory)
                     agent.brain.temp_memory = []
             else:
                 self.score[1] += 1
@@ -78,13 +79,13 @@ class Environment:
                         agent.brain.add_reward(50)
                     else:
                         agent.brain.add_reward(-50)
-                    print('non memory concat')
-                    print(agent.brain.memory)
-                    print('temp memory')
-                    print(agent.brain.temp_memory)
+                    # print('non memory concat')
+                    # print(agent.brain.memory)
+                    # print('temp memory')
+                    # print(agent.brain.temp_memory)
                     agent.brain.memory = np.concatenate((agent.brain.memory, agent.brain.temp_memory), axis=0)
-                    print('memory concat')
-                    print(agent.brain.memory)
+                    # print('memory concat')
+                    # print(agent.brain.memory)
                     agent.brain.temp_memory = []
 
             self.reinit_agents()
@@ -111,6 +112,7 @@ class Environment:
         for agent in self.agents:
             agent.brain.shuffle_weights()
             agent.reward = 0
+            agent.brain.epsilon = 1
 
     def reinit_agents(self):
         for agent in self.agents:
@@ -138,7 +140,7 @@ class Environment:
         for y in range(self.height):
             row = []
             for x in range(self.width):
-                row.append(choices([0, 1], weights=[10, 0])[0])
+                row.append(choices([0, 1], weights=[10, 2])[0])
             self.map.append(row)
         self.map_print()
 
@@ -235,12 +237,21 @@ class Environment:
         self.button_quit = Button(self.window, text="Quit", command=self.quit)
         self.button_reinit_agent = Button(self.window, text="Reinit agent", command=self.reinit_brain_agents)
         self.button_log_agents = Button(self.window, text="Log agents", command=self.log_agents)
+        self.button_save_models = Button(self.window, text="Save models", command=self.save_models)
         # pack button
         self.button_simulation.pack(side=LEFT, expand=True, fill=BOTH)
         self.button_stop.pack(side=LEFT, expand=True, fill=BOTH)
         self.button_quit.pack(side=LEFT, expand=True, fill=BOTH)
         self.button_reinit_agent.pack(side=LEFT, expand=True, fill=BOTH)
         self.button_log_agents.pack(side=LEFT, expand=True, fill=BOTH)
+        self.button_save_models.pack(side=LEFT, expand=True, fill=BOTH)
+
+    def save_models(self):
+        i = 0
+        for agent in self.agents:
+            agent.brain.save(id=i)
+            i += 1
+            print('brain save')
 
     def quit(self):
         self.run = False  # to stop While in simulation()

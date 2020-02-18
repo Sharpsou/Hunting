@@ -167,6 +167,8 @@ class Agent:
         print(self.state)
         print('epsilon')
         print(self.brain.epsilon)
+        # print('memory')
+        # print(self.brain.memory)
 
 
 class Hunter(Agent):
@@ -176,7 +178,7 @@ class Hunter(Agent):
         self.detection_range = 4
         self.resolution = self.detection_range  # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
-        self.brain = Brain(agent=self)
+        self.brain = Brain(name='Hunter', agent=self)
 
 
 class Prey(Agent):
@@ -186,5 +188,5 @@ class Prey(Agent):
         self.detection_range = 4
         self.resolution = self.detection_range  # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
-        self.brain = Brain(agent=self)
+        self.brain = Brain(name='Prey', agent=self)
 
