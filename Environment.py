@@ -5,11 +5,12 @@ import numpy as np
 
 
 class Environment:
-    def __init__(self, height, width, ratio,  nb_hunter, nb_prey, time_limit=50):
+    def __init__(self, height, width, ratio,  nb_hunter, nb_prey, time_limit=50, load=False):
         self.height = height
         self.width = width
         self.nb_hunter = nb_hunter
         self.nb_prey = nb_prey
+        self.load = load
         self.window_width = 1280 / ratio
         self.window_height = 920 / ratio
         self.window_marge = 420 / ratio
@@ -100,8 +101,8 @@ class Environment:
     def log_agents(self):
         for agent in self.agents:
             agent.log_agent()
-        print('result')
-        print(self.result)
+        # print('result')
+        # print(self.result)
         print('score')
         print(self.score)
 

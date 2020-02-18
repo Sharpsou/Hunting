@@ -18,6 +18,7 @@ class Agent:
         self.dol = 8
         self.reward = 0
         self.done = False
+        self.load = env.load
 
     def init_radar(self):
         radar_init = []
