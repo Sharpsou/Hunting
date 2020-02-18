@@ -14,7 +14,7 @@ import pandas as pd
 
 
 class Brain:
-    def __init__(self, name=None, learning_rate=0.1, epsilon_decay=0.9999, batch_size=100, memory_size=3000, agent=None):
+    def __init__(self, name=None, learning_rate=0.01, epsilon_decay=0.9999, batch_size=100, memory_size=3000, agent=None):
         self.state_size = 8*agent.resolution*2
         self.action_size = agent.dol
         self.epsilon = 1
@@ -92,16 +92,16 @@ class Brain:
         self.memory.sort(key=lambda x: x[2])
         #print(self.memory[:2])
 
-        minibatch = self.memory[-batch_size:]
+        self.minibatch = self.memory[-batch_size:]
 
         inputs = np.zeros((batch_size, self.state_size))
         outputs = np.zeros((batch_size, self.action_size))
 
-        for i, (state, action, reward, done) in enumerate(minibatch):
+        for i, (state, action, reward, done) in enumerate(self.minibatch):
             inputs[i] = state
             outputs[i] = action
 
-        return self.model.fit(inputs, outputs, epochs=0, verbose=1)
+        return self.model.fit(inputs, outputs, epochs=10, verbose=0)
 
     def save(self, id=None, overwrite=False):
         name = 'model'

@@ -168,6 +168,14 @@ class Agent:
         print(self.state)
         print('epsilon')
         print(self.brain.epsilon)
+        inputs = np.zeros((len(self.brain.minibatch), self.brain.state_size))
+        outputs = np.zeros((len(self.brain.minibatch), self.brain.action_size))
+        for i, (state, action, reward, done) in enumerate(self.brain.minibatch):
+            inputs[i] = state
+            outputs[i] = action
+        evaluation = self.brain.model.evaluate(inputs, outputs)
+        print('eval')
+        print(evaluation)
         # print('memory')
         # print(self.brain.memory)
 

@@ -35,8 +35,8 @@ class Environment:
         while self.run:
             self.t += 1
             for agent in self.agents:
-                reward, agent.done = agent.next_movement(self)
-                agent.reward += reward
+                agent.reward, agent.done = agent.next_movement(self)
+                # agent.reward += reward
 
             self.canvas.delete('agent')
             self.sync_agents()
