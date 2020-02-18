@@ -2,6 +2,8 @@ from Agent import *
 from tkinter import *
 from random import *
 import numpy as np
+import matplotlib.pyplot as plt
+
 
 
 class Environment:
@@ -22,6 +24,9 @@ class Environment:
         self.result = []
         self.score = [0, 0]
         self.time_limit = time_limit
+        self.history_acc = [[-3, 1], [-2, 0.5], [-1, 0]]
+        self.plot_acc = plt.axis([0, self.score[0]+self.score[1], 0, 1])
+
         self.canvas.mainloop()
 
     def possibles_movements(self, x, y):
@@ -29,6 +34,13 @@ class Environment:
             return True
         else:
             return False
+
+    def plot(self):
+        for i in self.history_acc:
+            plt.scatter(i[0], i[1])
+            plt.pause(0.05)
+
+        plt.show()
 
     def simulation(self):
         self.run = True
@@ -103,7 +115,7 @@ class Environment:
             agent.log_agent()
         # print('result')
         # print(self.result)
-        print('score')
+        print('score : Hunter, Prey')
         print(self.score)
 
     def reinit_environment(self):
@@ -141,7 +153,7 @@ class Environment:
         for y in range(self.height):
             row = []
             for x in range(self.width):
-                row.append(choices([0, 1], weights=[10, 2])[0])
+                row.append(choices([0, 1], weights=[10, 0])[0])
             self.map.append(row)
         self.map_print()
 
@@ -239,6 +251,7 @@ class Environment:
         self.button_reinit_agent = Button(self.window, text="Reinit agent", command=self.reinit_brain_agents)
         self.button_log_agents = Button(self.window, text="Log agents", command=self.log_agents)
         self.button_save_models = Button(self.window, text="Save models", command=self.save_models)
+        self.button_plot = Button(self.window, text="Plot", command=self.plot)
         # pack button
         self.button_simulation.pack(side=LEFT, expand=True, fill=BOTH)
         self.button_stop.pack(side=LEFT, expand=True, fill=BOTH)
@@ -246,6 +259,7 @@ class Environment:
         self.button_reinit_agent.pack(side=LEFT, expand=True, fill=BOTH)
         self.button_log_agents.pack(side=LEFT, expand=True, fill=BOTH)
         self.button_save_models.pack(side=LEFT, expand=True, fill=BOTH)
+        self.button_plot.pack(side=LEFT, expand=True, fill=BOTH)
 
     def save_models(self):
         i = 0

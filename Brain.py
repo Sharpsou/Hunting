@@ -14,7 +14,7 @@ import pandas as pd
 
 
 class Brain:
-    def __init__(self, name=None, learning_rate=0.01, epsilon_decay=0.9999, batch_size=100, memory_size=3000, agent=None):
+    def __init__(self, name=None, learning_rate=0.01, epsilon_decay=0.999, batch_size=100, memory_size=3000, agent=None):
         self.state_size = 8*agent.resolution*2
         self.action_size = agent.dol
         self.epsilon = 1
@@ -37,18 +37,20 @@ class Brain:
             self.model.add(Dense(16*agent.resolution, input_dim=self.state_size, activation='relu'))
             self.model.add(Dropout(rate=0.2))
             self.model.add(Dense(32*agent.resolution, activation='relu'))
-            self.model.add(Dropout(rate=0.2))
-            self.model.add(Dense(8*agent.resolution, activation='relu'))
-            self.model.add(Dropout(rate=0.2))
-            self.model.add(Dense(4 * agent.resolution, activation='relu'))
-            self.model.add(Dropout(rate=0.2))
-            self.model.add(Dense(16, activation='relu'))
-            self.model.add(Dropout(rate=0.2))
+#            self.model.add(Dropout(rate=0.2))
+#            self.model.add(Dense(8*agent.resolution, activation='relu'))
+#            self.model.add(Dropout(rate=0.2))
+#            self.model.add(Dense(4 * agent.resolution, activation='relu'))
+#            self.model.add(Dropout(rate=0.2))
+#            self.model.add(Dense(16, activation='relu'))
+#            self.model.add(Dropout(rate=0.2))
             self.model.add(Dense(self.action_size, activation='linear'))
             self.model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate), metrics=['accuracy'])
 
     def decay_epsilon(self):
         self.epsilon *= self.epsilon_decay
+        if self.epsilon < 0.1:
+            self.epsilon = 0.1
 
     def add_reward(self, reward):
         for i in range(len(self.temp_memory)):
@@ -82,9 +84,6 @@ class Brain:
         if len(self.memory) == 0:
             self.memory.append([state, action, reward, done])
         self.temp_memory.append([state, action, reward, done])
-
-    def takeSecond(self, elem):
-        return elem[2]
 
     def fit(self, batch_size=30):
         batch_size = min(batch_size, len(self.memory))
