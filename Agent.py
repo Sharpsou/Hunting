@@ -194,7 +194,7 @@ class Hunter(Agent):
         super().__init__(x, y, env)
         self.health = 1
         self.detection_range = 3
-        self.resolution = self.detection_range  # self.detection_range-1 if self.detection_range > 1 else 1
+        self.resolution = 2 # self.detection_range  # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
         self.brain = Brain(name='Hunter', agent=self)
 
@@ -203,8 +203,8 @@ class Prey(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 2
-        self.detection_range = 2
-        self.resolution = self.detection_range  # self.detection_range-1 if self.detection_range > 1 else 1
+        self.detection_range = 3
+        self.resolution = 2 # self.detection_range  # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
         self.brain = Brain(name='Prey', agent=self)
 
