@@ -14,7 +14,7 @@ import pandas as pd
 
 
 class Brain:
-    def __init__(self, name=None, learning_rate=0.01, epsilon_decay=0.999, batch_size=100, memory_size=3000, agent=None):
+    def __init__(self, name=None, learning_rate=0.001, epsilon_decay=0.999, batch_size=200, memory_size=3000, agent=None):
         self.state_size = 8*agent.resolution*2
         self.action_size = agent.dol
         self.epsilon = 1

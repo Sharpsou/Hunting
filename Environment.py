@@ -24,8 +24,7 @@ class Environment:
         self.result = []
         self.score = [0, 0]
         self.time_limit = time_limit
-        self.history_acc = [[-3, 1], [-2, 0.5], [-1, 0]]
-        self.plot_acc = plt.axis([0, self.score[0]+self.score[1], 0, 1])
+        self.plot_acc = plt.axis([0, 1, 0, 1])
 
         self.canvas.mainloop()
 
@@ -36,8 +35,8 @@ class Environment:
             return False
 
     def plot(self):
-        for i in self.history_acc:
-            plt.scatter(i[0], i[1])
+        for i in range(10):
+            plt.scatter(i, i)
             plt.pause(0.05)
 
         plt.show()
@@ -61,6 +60,8 @@ class Environment:
 
             for agent in self.agents:
                 agent.learn()
+                num_party = sum(self.score[0])+sum(self.score[1])
+                agent.history_acc.append([agent.evaluate_agent()[1], num_party])
 
             self.canvas.after(1)
             self.is_done()

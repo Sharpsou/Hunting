@@ -3,6 +3,7 @@ from math import *
 import pandas as pd
 from Brain import *
 from numpy import arange
+import numpy as np
 
 
 class Agent:
@@ -19,6 +20,7 @@ class Agent:
         self.reward = 0
         self.done = False
         self.load = env.load
+        self.history_acc = [[-3, 1], [-2, 0.5], [-1, 0]]
 
     def init_radar(self):
         radar_init = []
@@ -152,6 +154,14 @@ class Agent:
 
         return sector
 
+    def evaluate_agent(self):
+        inputs = np.zeros((len(self.brain.minibatch), self.brain.state_size))
+        outputs = np.zeros((len(self.brain.minibatch), self.brain.action_size))
+        for i, (state, action, reward, done) in enumerate(self.brain.minibatch):
+            inputs[i] = state
+            outputs[i] = action
+        return self.brain.model.evaluate(inputs, outputs)
+
     def log_agent(self):
         print("type : ", type(self))
         print("position : ", self.position_x, self.position_y)
@@ -168,14 +178,13 @@ class Agent:
         print(self.state)
         print('epsilon')
         print(self.brain.epsilon)
-        inputs = np.zeros((len(self.brain.minibatch), self.brain.state_size))
-        outputs = np.zeros((len(self.brain.minibatch), self.brain.action_size))
-        for i, (state, action, reward, done) in enumerate(self.brain.minibatch):
-            inputs[i] = state
-            outputs[i] = action
-        evaluation = self.brain.model.evaluate(inputs, outputs)
+        print('len memory')
+        print(len(self.brain.memory))
+        evaluation = self.evaluate_agent()
         print('eval')
         print(evaluation)
+        print('history acc')
+        print(self.history_acc)
         # print('memory')
         # print(self.brain.memory)
 
