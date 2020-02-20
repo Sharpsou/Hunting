@@ -25,7 +25,7 @@ class Environment:
         self.score = [0, 0]
         self.time_limit = time_limit
         self.plot_acc = plt.axis([0, 1, 0, 1])
-
+        self.num_party = 0
         self.canvas.mainloop()
 
     def possibles_movements(self, x, y):
@@ -60,15 +60,15 @@ class Environment:
 
             for agent in self.agents:
                 agent.learn()
-                num_party = sum(self.score[0])+sum(self.score[1])
-                agent.history_acc.append([agent.evaluate_agent()[1], num_party])
+                agent.history_acc.append([agent.evaluate_agent()[1], self.num_party])
 
             self.canvas.after(1)
             self.is_done()
 
     def is_done(self):
         if self.done or self.t >= self.time_limit:
-            # self.log_agents()
+            self.num_party += 1
+            self.log_agents()
             if self.done and self.t < self.time_limit:
                 self.score[0] += 1
                 self.result.append([1,0,self.t])
@@ -77,13 +77,7 @@ class Environment:
                         agent.brain.add_reward(-50)
                     else:
                         agent.brain.add_reward(50)
-                    # print('non memory concat')
-                    # print(agent.brain.memory)
-                    # print('temp memory')
-                    # print(agent.brain.temp_memory)
                     agent.brain.memory = np.concatenate((agent.brain.memory, agent.brain.temp_memory), axis=0)
-                    # print('memory concat')
-                    # print(agent.brain.memory)
                     agent.brain.temp_memory = []
             else:
                 self.score[1] += 1
@@ -93,13 +87,7 @@ class Environment:
                         agent.brain.add_reward(50)
                     else:
                         agent.brain.add_reward(-50)
-                    # print('non memory concat')
-                    # print(agent.brain.memory)
-                    # print('temp memory')
-                    # print(agent.brain.temp_memory)
                     agent.brain.memory = np.concatenate((agent.brain.memory, agent.brain.temp_memory), axis=0)
-                    # print('memory concat')
-                    # print(agent.brain.memory)
                     agent.brain.temp_memory = []
 
             self.reinit_agents()
@@ -114,8 +102,6 @@ class Environment:
     def log_agents(self):
         for agent in self.agents:
             agent.log_agent()
-        # print('result')
-        # print(self.result)
         print('score : Hunter, Prey')
         print(self.score)
 

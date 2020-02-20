@@ -20,7 +20,7 @@ class Agent:
         self.reward = 0
         self.done = False
         self.load = env.load
-        self.history_acc = [[-3, 1], [-2, 0.5], [-1, 0]]
+        self.history_acc = []
 
     def init_radar(self):
         radar_init = []
@@ -160,7 +160,7 @@ class Agent:
         for i, (state, action, reward, done) in enumerate(self.brain.minibatch):
             inputs[i] = state
             outputs[i] = action
-        return self.brain.model.evaluate(inputs, outputs)
+        return self.brain.model.evaluate(inputs, outputs, verbose=0)
 
     def log_agent(self):
         print("type : ", type(self))
@@ -185,8 +185,6 @@ class Agent:
         print(evaluation)
         print('history acc')
         print(self.history_acc)
-        # print('memory')
-        # print(self.brain.memory)
 
 
 class Hunter(Agent):
