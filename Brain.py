@@ -26,6 +26,7 @@ class Brain:
         self.batch_size = batch_size
         self.count = []
         self.agent = agent
+        self.verbose_fit = 0
 
         self.name = name
         if self.agent.load :
@@ -34,7 +35,7 @@ class Brain:
             print('load model')
         else:
             self.model = Sequential()
-            self.model.add(Dense(16*agent.resolution, input_dim=self.state_size, activation='relu'))
+            self.model.add(Dense(16*agent.resolution, input_dim=self.state_size, activation='tanh'))
             self.model.add(Dropout(rate=0.2))
             self.model.add(Dense(32*agent.resolution, activation='relu'))
 #            self.model.add(Dropout(rate=0.2))
@@ -85,8 +86,8 @@ class Brain:
             self.memory.append([state, action, reward, done])
         self.temp_memory.append([state, action, reward, done])
 
-    def fit(self, batch_size=30):
-        batch_size = min(batch_size, len(self.memory))
+    def fit(self):
+        batch_size = min(self.batch_size, len(self.memory))
         self.memory = list(self.memory)
         self.memory.sort(key=lambda x: x[2])
         #print(self.memory[:2])
@@ -100,7 +101,7 @@ class Brain:
             inputs[i] = state
             outputs[i] = action
 
-        return self.model.fit(inputs, outputs, epochs=10, verbose=0)
+        return self.model.fit(inputs, outputs, epochs=10, verbose=self.verbose_fit)
 
     def save(self, id=None, overwrite=False):
         name = 'model'

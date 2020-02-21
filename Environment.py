@@ -73,6 +73,7 @@ class Environment:
                 self.score[0] += 1
                 self.result.append([1,0,self.t])
                 for agent in self.agents:
+                    # agent.brain.verbose_fit = 2
                     if type(agent) is Prey:
                         agent.brain.add_reward(-50)
                     else:

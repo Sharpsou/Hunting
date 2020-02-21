@@ -33,6 +33,7 @@ class Agent:
     def learn(self):
         self.brain.temp_remember(self.state, self.action, self.reward, self.done)
         self.brain.fit()
+        self.brain.verbose_fit = False
 
     def next_movement(self, env):
         done = False
@@ -110,12 +111,12 @@ class Agent:
                     if delta_area != 0:
                         for range_x in arange(x-delta_area, x+delta_area, delta_area): # to scan area of unit
                             for range_y in arange(y-delta_area, y+delta_area, delta_area):  # to scan area of unit
-                                sector = self.get_coord(range_x, range_y)
+                                sector, distance = self.get_coord(range_x, range_y)
                                 sector.append(layer)
                                 sector.append(env.what_type(self.position_x + x, self.position_y + y))
                                 neighbour.append(sector)
                     else:
-                        sector = self.get_coord(x, y)
+                        sector, distance = self.get_coord(x, y)
                         sector.append(layer)
                         sector.append(env.what_type(self.position_x + x, self.position_y + y))
                         neighbour.append(sector)
@@ -133,7 +134,7 @@ class Agent:
             orientation = 1
         angle = (acos(y / distance) * orientation)
         sector = [self.get_sector(angle, orientation)]
-        return sector
+        return sector, distance
 
     def get_sector(self, angle, orientation):
         sector_half_length = pi / (self.resolution * 8)
@@ -191,7 +192,7 @@ class Hunter(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 1
-        self.detection_range = 3
+        self.detection_range = 4
         self.resolution = 2 # self.detection_range  # self.detection_range-1 if self.detection_range > 1 else 1
         self.get_radar(env)
         self.brain = Brain(name='Hunter', agent=self)
