@@ -14,7 +14,7 @@ import pandas as pd
 
 
 class Brain:
-    def __init__(self, name=None, learning_rate=0.001, epsilon_decay=0.999, batch_size=200, memory_size=3000, agent=None):
+    def __init__(self, name=None, learning_rate=0.001, epsilon_decay=0.999, batch_size=1000, memory_size=3000, agent=None):
         self.state_size = 8*agent.resolution*2
         self.action_size = agent.dol
         self.epsilon = 1
@@ -36,8 +36,8 @@ class Brain:
         else:
             self.model = Sequential()
             self.model.add(Dense(16*agent.resolution, input_dim=self.state_size, activation='tanh'))
-            self.model.add(Dropout(rate=0.2))
-            self.model.add(Dense(32*agent.resolution, activation='relu'))
+            # self.model.add(Dropout(rate=0.2))
+            # self.model.add(Dense(32*agent.resolution, activation='relu'))
 #            self.model.add(Dropout(rate=0.2))
 #            self.model.add(Dense(8*agent.resolution, activation='relu'))
 #            self.model.add(Dropout(rate=0.2))
@@ -45,7 +45,7 @@ class Brain:
 #            self.model.add(Dropout(rate=0.2))
 #            self.model.add(Dense(16, activation='relu'))
 #            self.model.add(Dropout(rate=0.2))
-            self.model.add(Dense(self.action_size, activation='linear'))
+            self.model.add(Dense(self.action_size, activation='relu'))
             self.model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate), metrics=['accuracy'])
 
     def decay_epsilon(self):
@@ -90,6 +90,8 @@ class Brain:
         batch_size = min(self.batch_size, len(self.memory))
         self.memory = list(self.memory)
         self.memory.sort(key=lambda x: x[2])
+        if self.batch_size == batch_size:
+            self.memory = self.memory[-batch_size:]
         #print(self.memory[:2])
 
         self.minibatch = self.memory[-batch_size:]

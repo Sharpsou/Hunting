@@ -60,8 +60,7 @@ class Environment:
 
             for agent in self.agents:
                 agent.learn()
-                agent.history_acc.append([agent.evaluate_agent()[1], self.num_party])
-
+                
             self.canvas.after(1)
             self.is_done()
 
@@ -73,6 +72,7 @@ class Environment:
                 self.score[0] += 1
                 self.result.append([1,0,self.t])
                 for agent in self.agents:
+                    agent.history_acc.append([agent.evaluate_agent()[1], self.num_party])
                     # agent.brain.verbose_fit = 2
                     if type(agent) is Prey:
                         agent.brain.add_reward(-50)
@@ -84,6 +84,7 @@ class Environment:
                 self.score[1] += 1
                 self.result.append([0,1,self.t])
                 for agent in self.agents:
+                    agent.history_acc.append([agent.evaluate_agent()[1], self.num_party])
                     if type(agent) is Prey:
                         agent.brain.add_reward(50)
                     else:
@@ -259,6 +260,7 @@ class Environment:
     def quit(self):
         self.run = False  # to stop While in simulation()
         self.window.destroy()
+        sys.exit()
 
     def stop_simulation(self):
         self.run = False  # to stop While in simulation()
