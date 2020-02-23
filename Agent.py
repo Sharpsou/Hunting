@@ -35,6 +35,10 @@ class Agent:
         self.brain.fit()
         self.brain.verbose_fit = False
 
+    def categorizer_radar(self):
+        self.radar 
+        self.state =
+
     def next_movement(self, env):
         done = False
         done_reward = 0
