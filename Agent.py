@@ -36,8 +36,15 @@ class Agent:
         self.brain.verbose_fit = False
 
     def categorizer_radar(self):
-        self.radar 
-        self.state =
+        inputs = np.zeros((batch_size, self.state_size))
+        outputs = np.zeros((batch_size, self.action_size))
+        radar_wall = []
+        radar_hunter = []
+        radar_prey = []
+        for i in range(0, len(self.radar-1)):
+            if self.radar[1][i] == 1:
+                radar_wall = 1
+        return True
 
     def next_movement(self, env):
         done = False
