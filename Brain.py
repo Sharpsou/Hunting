@@ -1,6 +1,8 @@
 from Agent import *
 from keras.models import Sequential
 from keras.layers import Dense
+from keras.layers import Conv1D
+from keras.layers import Flatten
 from keras.optimizers import Adam
 from keras.layers import Dropout
 from random import *
@@ -35,18 +37,24 @@ class Brain:
             print('load model')
         else:
             self.model = Sequential()
-            self.model.add(Dense(16*agent.resolution, input_dim=self.state_size, activation='tanh'))
-            # self.model.add(Dropout(rate=0.2))
-            # self.model.add(Dense(32*agent.resolution, activation='relu'))
-#            self.model.add(Dropout(rate=0.2))
-#            self.model.add(Dense(8*agent.resolution, activation='relu'))
-#            self.model.add(Dropout(rate=0.2))
-#            self.model.add(Dense(4 * agent.resolution, activation='relu'))
-#            self.model.add(Dropout(rate=0.2))
-#            self.model.add(Dense(16, activation='relu'))
-#            self.model.add(Dropout(rate=0.2))
-            self.model.add(Dense(self.action_size, activation='relu'))
-            self.model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate), metrics=['accuracy'])
+            self.model.add(Conv1D(64, kernel_size=2, activation='relu', input_shape=(self.agent.side, self.agent.side*2)))
+            self.model.add(Conv1D(32, kernel_size=2, activation='relu'))
+            self.model.add(Flatten())
+            self.model.add(Dense(self.action_size, activation='softmax'))
+            self.model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+#             self.model.add(Dense(16*agent.resolution, input_dim=self.state_size, activation='tanh'))
+#             # self.model.add(Dropout(rate=0.2))
+#             # self.model.add(Dense(32*agent.resolution, activation='relu'))
+# #            self.model.add(Dropout(rate=0.2))
+# #            self.model.add(Dense(8*agent.resolution, activation='relu'))
+# #            self.model.add(Dropout(rate=0.2))
+# #            self.model.add(Dense(4 * agent.resolution, activation='relu'))
+# #            self.model.add(Dropout(rate=0.2))
+# #            self.model.add(Dense(16, activation='relu'))
+# #            self.model.add(Dropout(rate=0.2))
+#             self.model.add(Dense(self.action_size, activation='relu'))
+#             self.model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate), metrics=['accuracy'])
+
 
     def decay_epsilon(self):
         self.epsilon *= self.epsilon_decay
@@ -59,10 +67,7 @@ class Brain:
 
     def get_action(self, state, rand=True):
         self.decay_epsilon()
-        value_layer_in = np.array(state['layer_x'])
-        value_type_in = np.array(state['type_x'])
-        value_in = np.concatenate((value_layer_in, value_type_in), axis=None)
-        value_in = np.asarray([value_in])
+        value_in = state
 
         if rand and np.random.rand() <= self.epsilon:
             action = randrange(self.action_size)
@@ -96,11 +101,11 @@ class Brain:
 
         self.minibatch = self.memory[-batch_size:]
 
-        inputs = np.zeros((batch_size, self.state_size))
+        inputs = []
         outputs = np.zeros((batch_size, self.action_size))
 
         for i, (state, action, reward, done) in enumerate(self.minibatch):
-            inputs[i] = state
+            inputs.append(state)
             outputs[i] = action
 
         return self.model.fit(inputs, outputs, epochs=10, verbose=self.verbose_fit)

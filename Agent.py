@@ -35,21 +35,38 @@ class Agent:
         self.brain.fit()
         self.brain.verbose_fit = False
 
-    def categorizer_radar(self):
-        inputs = np.zeros((batch_size, self.state_size))
-        outputs = np.zeros((batch_size, self.action_size))
-        radar_wall = []
-        radar_hunter = []
-        radar_prey = []
-        for i in range(0, len(self.radar-1)):
-            if self.radar[1][i] == 1:
-                radar_wall = 1
-        return True
+    def categorizer_radar(self, env):
+        self.side = (self.detection_range*2)+1
+        plan_x_min = self.position_x-self.detection_range
+        plan_x_max = self.position_x+self.detection_range
+        plan_y_min = self.position_y-self.detection_range
+        plan_y_max = self.position_y+self.detection_range
+
+        radar_agents = np.zeros((env.height+1, env.width+1))
+        radar_wall = env.map[plan_x_min:plan_x_max][plan_y_min:plan_y_max]
+        print('env dimension')
+        print(env.height, env.width)
+
+        for agent in env.agents:
+            if type(agent) is Prey:
+                print('prey position')
+                print(agent.position_x,agent.position_y)
+
+                radar_agents[agent.position_x, agent.position_y] = 1
+            if type(agent) is Hunter:
+                print('hunter position')
+
+                print(agent.position_x,agent.position_y)
+                radar_agents[agent.position_x, agent.position_y] = -1
+        radar_agents = radar_agents[plan_x_min:plan_x_max][plan_y_min:plan_y_max]
+        value_in = np.concatenate((radar_wall, radar_agents), axis=None)
+        value_in = np.asarray([value_in])
+        self.radar = value_in
 
     def next_movement(self, env):
         done = False
         done_reward = 0
-        self.get_radar(env)
+        self.categorizer_radar(env)
         self.next_direction()
         x = self.position_x + self.direction_x
         y = self.position_y + self.direction_y
@@ -95,76 +112,10 @@ class Agent:
         direction, self.action, self.state = self.brain.get_action(self.radar, rand=True)
         self.direction_x, self.direction_y = self.direction_to_coord(direction)
 
-    def get_radar(self, env):
-        neighbour = self.get_neighbour(env)
-        if not neighbour.empty:
-            apparent_neighbour = neighbour[['sector', 'layer']]
-            apparent_neighbour_min_layer = apparent_neighbour.groupby(['sector']).min()
-            apparent_neighbour_min_dist = apparent_neighbour_min_layer.merge(neighbour, on='sector', how='inner')
-            apparent_neighbour_min_dist = apparent_neighbour_min_dist[['sector', 'layer_x', 'type']]
-        else:
-            apparent_neighbour_min_dist = self.init_radar()
-        radar_tmp = apparent_neighbour_min_dist.merge(self.init_radar(), on='sector', how='right').drop_duplicates()
-        radar_tmp = radar_tmp.sort_values('sector').fillna(0)
-        radar_tmp_final = radar_tmp[['sector', 'type_x']].groupby(['sector']).max().merge(radar_tmp[['sector', 'layer_x']].drop_duplicates(), on='sector', how='inner')
-        self.radar = radar_tmp_final[['layer_x', 'type_x']]
 
-    def get_neighbour(self, env):
-        neighbour = []
-        min_range = -self.detection_range
-        max_range = self.detection_range + 1
-        for y in range(min_range, max_range):
-            for x in range(min_range, max_range):
-                if (y != 0 or x != 0) and (not env.possibles_movements(self.position_x + x, self.position_y + y)
-                                           or env.is_agent(self.position_x + x, self.position_y + y)[0]):
-                    layer = max(abs(x), abs(y))
-                    delta_area = 0.5  # 0.1*layer if layer < 5 else 0.5
-                    if delta_area != 0:
-                        for range_x in arange(x-delta_area, x+delta_area, delta_area): # to scan area of unit
-                            for range_y in arange(y-delta_area, y+delta_area, delta_area):  # to scan area of unit
-                                sector, distance = self.get_coord(range_x, range_y)
-                                sector.append(layer)
-                                sector.append(env.what_type(self.position_x + x, self.position_y + y))
-                                neighbour.append(sector)
-                    else:
-                        sector, distance = self.get_coord(x, y)
-                        sector.append(layer)
-                        sector.append(env.what_type(self.position_x + x, self.position_y + y))
-                        neighbour.append(sector)
 
-        neighbour = pd.DataFrame(neighbour)
-        if not neighbour.empty:
-            neighbour.columns = ['sector', 'layer', 'type']
-        return neighbour
 
-    def get_coord(self, x, y):
-        distance = sqrt(y * y + x * x)
-        if x != 0:
-            orientation = (x / abs(x))
-        else:
-            orientation = 1
-        angle = (acos(y / distance) * orientation)
-        sector = [self.get_sector(angle, orientation)]
-        return sector, distance
 
-    def get_sector(self, angle, orientation):
-        sector_half_length = pi / (self.resolution * 8)
-        sector_start = [-sector_half_length, sector_half_length]
-        if orientation == 1:
-            sector = 0
-        else:
-            sector = 8 * self.resolution
-        while not sector_start[0] <= angle < sector_start[1]:
-            if orientation == 1:
-                sector_start[0] += 2 * sector_half_length
-                sector_start[1] += 2 * sector_half_length
-                sector += 1
-            else:
-                sector_start[0] -= 2 * sector_half_length
-                sector_start[1] -= 2 * sector_half_length
-                sector -= 1
-
-        return sector
 
     def evaluate_agent(self):
         inputs = np.zeros((len(self.brain.minibatch), self.brain.state_size))
@@ -203,9 +154,9 @@ class Hunter(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 1
-        self.detection_range = 4
+        self.detection_range = 1
         self.resolution = 2 # self.detection_range  # self.detection_range-1 if self.detection_range > 1 else 1
-        self.get_radar(env)
+        self.categorizer_radar(env)
         self.brain = Brain(name='Hunter', agent=self)
 
 
@@ -213,8 +164,8 @@ class Prey(Agent):
     def __init__(self, x, y, env):
         super().__init__(x, y, env)
         self.health = 2
-        self.detection_range = 4
+        self.detection_range = 1
         self.resolution = 2 # self.detection_range  # self.detection_range-1 if self.detection_range > 1 else 1
-        self.get_radar(env)
+        self.categorizer_radar(env)
         self.brain = Brain(name='Prey', agent=self)
 
