@@ -1,7 +1,8 @@
 from Agent import *
 from keras.models import Sequential
 from keras.layers import Dense
-from keras.layers import Conv1D
+# from keras.layers import Input
+from keras.layers import Conv2D
 from keras.layers import Flatten
 from keras.optimizers import Adam
 from keras.layers import Dropout
@@ -37,8 +38,8 @@ class Brain:
             print('load model')
         else:
             self.model = Sequential()
-            self.model.add(Conv1D(64, kernel_size=2, activation='relu', input_shape=(self.agent.side, self.agent.side*2)))
-            self.model.add(Conv1D(32, kernel_size=2, activation='relu'))
+            self.model.add(Conv2D(2, kernel_size=2, activation='relu', input_shape=(self.agent.side, self.agent.side*2,1)))
+            self.model.add(Conv2D(2, kernel_size=2, activation='relu'))
             self.model.add(Flatten())
             self.model.add(Dense(self.action_size, activation='softmax'))
             self.model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
@@ -105,6 +106,7 @@ class Brain:
         outputs = np.zeros((batch_size, self.action_size))
 
         for i, (state, action, reward, done) in enumerate(self.minibatch):
+            state = np.reshape(state, [self.agent.side, self.agent.side*2, 1])
             inputs.append(state)
             outputs[i] = action
 
