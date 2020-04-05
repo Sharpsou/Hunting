@@ -9,6 +9,9 @@ from keras.layers import Dropout
 from random import *
 import numpy as np
 from keras.models import load_model
+from keras.layers import Dense, Dropout, Input
+from keras.layers import Conv2D, MaxPooling2D, Flatten
+from keras.models import Model
 import os
 import time
 import pandas as pd
@@ -32,11 +35,38 @@ class Brain:
         self.verbose_fit = 0
 
         self.name = name
-        if self.agent.load :
+        if self.agent.load:
             self.model = load_model("model-" + name)
             self.epsilon = 0.1
             print('load model')
         else:
+            input_shape = (image_size, image_size, 1)
+            batch_size = 128
+            kernel_size = 3
+            filters = 64
+            dropout = 0.3
+
+            # use functional API to build cnn layers
+            inputs = Input(shape=input_shape)
+            y = Conv2D(filters=filters,
+                       kernel_size=kernel_size,
+                       activation='relu')(inputs)
+            y = MaxPooling2D()(y)
+            y = Conv2D(filters=filters,
+                       kernel_size=kernel_size,
+                       activation='relu')(y)
+            y = MaxPooling2D()(y)
+            y = Conv2D(filters=filters,
+                       kernel_size=kernel_size,
+                       activation='relu')(y)
+            # image to vector before connecting to dense layer
+            y = Flatten()(y)
+            # dropout regularization
+            y = Dropout(dropout)(y)
+            outputs = Dense(num_labels, activation='softmax')(y)
+
+            # build the model by supplying inputs/outputs
+            model = Model(inputs=inputs, outputs=outputs)
             self.model = Sequential()
             self.model.add(Conv2D(2, kernel_size=2, activation='relu', input_shape=(self.agent.side, self.agent.side*2,1)))
             self.model.add(Conv2D(2, kernel_size=2, activation='relu'))
